@@ -164,9 +164,11 @@ input[type=number]::-webkit-outer-spin-button {
 #hireme{
   height: 45px;
   width: 105px;
-  color: #ffffff;
+  color: white;
   background-color: #0b0b0b00;
-  border: 1px solid white;
+  border: 1px solid #f700ff;
+  border-radius: var(--breakpoint-md);
+  
 }
 
 #hireme:hover{
