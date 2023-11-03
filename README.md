@@ -22,6 +22,6 @@ I'm eager to share these projects with you and demonstrate my passion for Flutte
 
 ## Get in Touch
 
-I'm always open to new collaborations, opportunities, and discussions. If you'd like to connect, discuss projects, or explore potential partnerships, feel free to reach out to me on [LinkedIn]([https://www.linkedin.com/in/yourprofile](https://www.linkedin.com/in/pullingal-soorath)). For updates on my latest projects and insights into the world of app development, you can also follow me on [Twitter](Loading...).
+I'm always open to new collaborations, opportunities, and discussions. If you'd like to connect, discuss projects, or explore potential partnerships, feel free to reach out to me on [LinkedIn]([(https://www.linkedin.com/in/pullingal-soorath)]). For updates on my latest projects and insights into the world of app development, you can also follow me on [Twitter](Loading...).
 
 Thank you for visiting, and I look forward to sharing my journey with you as a Flutter developer and UI enthusiast!
