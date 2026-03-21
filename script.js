@@ -103,4 +103,58 @@ function ValidateForm(){
 }
 
 
+const cursor = document.querySelector(".cursor");
+const button = document.querySelector(".magnetic");
 
+let mouseX = 0;
+let mouseY = 0;
+
+let cursorX = 0;
+let cursorY = 0;
+
+/* Mouse position */
+document.addEventListener("mousemove", (e)=>{
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+});
+
+/* Smooth cursor animation */
+function animateCursor(){
+
+  cursorX += (mouseX - cursorX) * 0.1;
+  cursorY += (mouseY - cursorY) * 0.1;
+
+  cursor.style.left = cursorX + "px";
+  cursor.style.top = cursorY + "px";
+
+  requestAnimationFrame(animateCursor);
+}
+
+animateCursor();
+
+/* Magnetic button effect */
+button.addEventListener("mousemove", (e)=>{
+
+  const rect = button.getBoundingClientRect();
+
+  const x = e.clientX - rect.left - rect.width/2;
+  const y = e.clientY - rect.top - rect.height/2;
+
+  button.style.transform = `translate(${x*0.4}px, ${y*0.4}px)`;
+
+  cursor.style.transform = "translate(-50%, -50%) scale(2)";
+});
+
+/* Reset when leaving button */
+button.addEventListener("mouseleave", ()=>{
+  button.style.transform = "translate(0,0)";
+  cursor.style.transform = "translate(-50%, -50%) scale(1)";
+});
+
+
+document.querySelectorAll('#portfolio-flters li').forEach(btn => {
+  btn.addEventListener('click', function () {
+    document.querySelector('#portfolio-flters .active').classList.remove('active');
+    this.classList.add('active');
+  });
+});
