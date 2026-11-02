@@ -1,0 +1,56 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Check if the authenticated user is one of Pullingal Soorath's designated admin accounts
+    function isAdmin() {
+      return request.auth != null && 
+        (request.auth.token.email.lower() == 'pullingalsoorath.dev@gmail.com' ||
+         request.auth.token.email.lower() == 'pullingalsoorath@gmail.com');
+    }
+
+    // Check if authenticated user owns the document (by UID match)
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // Contact form submissions from portfolio webpage
+    match /messages/{messageId} {
+      allow create: if true; // Public submission from contact form
+      allow read, update, delete: if isAdmin();
+    }
+
+    // User Profile Documents
+    match /users/{userId} {
+      allow read: if request.auth != null && (isOwner(userId) || isAdmin());
+      allow create, update: if request.auth != null && (isOwner(userId) || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // 1-on-1 Realtime Chat Threads (where chatId == visitor's UID)
+    match /chats/{chatId} {
+      // Visitors can only read and update their own thread; Admins can access all threads
+      allow read: if request.auth != null && (isOwner(chatId) || isAdmin());
+      allow create, update: if request.auth != null && (isOwner(chatId) || isAdmin());
+      allow delete: if isAdmin();
+
+      // Messages Subcollection inside a chat thread
+      match /messages/{messageId} {
+        // Read: Visitor can read their own thread's messages; Admins can read any thread
+        allow read: if request.auth != null && (isOwner(chatId) || isAdmin());
+        
+        // Create:
+        // - Visitor can send messages with senderId == their UID and role == 'user'
+        // - Admin can send messages with role == 'adminPS'
+        allow create: if request.auth != null && (
+          (isOwner(chatId) && request.resource.data.senderId == request.auth.uid && request.resource.data.senderRole == 'user') ||
+          (isAdmin() && request.resource.data.senderRole == 'adminPS')
+        );
+        
+        // Update (e.g., mark as read)
+        allow update: if request.auth != null && (isOwner(chatId) || isAdmin());
+        allow delete: if isAdmin();
+      }
+    }
+  }
+}

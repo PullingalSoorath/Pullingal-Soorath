@@ -1,0 +1,29 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Check if the authenticated user is one of Pullingal Soorath's designated admin accounts
+    function isAdmin() {
+      return request.auth != null && 
+        (request.auth.token.email.lower() == 'pullingalsoorath.dev@gmail.com' ||
+         request.auth.token.email.lower() == 'pullingalsoorath@gmail.com');
+    }
+
+    // Check if authenticated user owns the chat thread
+    function isOwner(chatId) {
+      return request.auth != null && request.auth.uid == chatId;
+    }
+
+    // Chat Media uploads (images and voice notes)
+    // Path: chat_media/{chatId}/{type}/{fileName}
+    match /chat_media/{chatId}/{type}/{fileName} {
+      // Allow read if user is the thread owner or admin
+      allow read: if request.auth != null && (isOwner(chatId) || isAdmin());
+
+      // Allow write (upload) if user is the thread owner or admin, and file size < 25MB
+      allow write: if request.auth != null && 
+        (isOwner(chatId) || isAdmin()) &&
+        request.resource.size < 25 * 1024 * 1024;
+    }
+  }
+}

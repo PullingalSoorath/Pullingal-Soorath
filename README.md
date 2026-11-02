@@ -1,27 +1,32 @@
-# Pullingal Soorath's Portfolio
+# React + TypeScript + Vite
 
-Welcome to my GitHub portfolio! I'm Pullingal Soorath, a passionate Flutter DEveloper with a focus on Flutter developing. This portfolio serves as a showcase of my projects, contributions, and journey in the world of technology and beyond.
+This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
 
-## About Me
+Currently, two official plugins are available:
 
-I'm Pullingal Soorath, a dedicated Flutter developer with a deep passion for crafting delightful user experiences and creating innovative mobile applications. My journey in the world of technology has been driven by a love for UI design and a commitment to delivering top-notch app experiences.
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-- **Profession:** Flutter Developer
-- **Expertise:** App Development, UI Design, Photoshope, Video Editing...
-- **Motivation:** Bringing creativity and functionality together in the world of mobile apps.
+## React Compiler
 
-I take pride in my work, always seeking new challenges and opportunities to learn, grow, and push the boundaries of what's possible in the mobile app space. Whether it's creating intuitive user interfaces or optimizing performance, I'm excited to make a meaningful impact.
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-## What You'll Find Here
+## Expanding the Oxlint configuration
 
-In this repository, you'll discover a variety of projects, showcasing my skills in Flutter app development and UI design. Each project reflects my dedication to creating visually stunning and user-friendly applications.
+If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
 
-- **Instagram UI**: A Flutter app that made with fully customerised and real instagram experiance.
+```json
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "oxc"],
+  "options": {
+    "typeAware": true
+  },
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/only-export-components": ["warn", { "allowConstantExport": true }]
+  }
+}
+```
 
-I'm eager to share these projects with you and demonstrate my passion for Flutter and UI design.
-
-## Get in Touch
-
-I'm always open to new collaborations, opportunities, and discussions. If you'd like to connect, discuss projects, or explore potential partnerships, feel free to reach out to me on [LinkedIn](https://www.linkedin.com/in/pullingal-soorath). For updates on my latest projects and insights into the world of app development, you can also follow me on [Twitter](Loading...).
-
-Thank you for visiting, and I look forward to sharing my journey with you as a Flutter developer and UI enthusiast!
+See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
