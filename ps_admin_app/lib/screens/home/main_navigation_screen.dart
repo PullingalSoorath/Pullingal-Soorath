@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../services/firebase_service.dart';
 import '../../theme/app_theme.dart';
 import '../auth/login_screen.dart';
@@ -80,6 +81,14 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.public, color: AppTheme.cyan, size: 20),
+            tooltip: 'Visit Live Portfolio (https://pullingal-soorath.web.app/)',
+            onPressed: () => launchUrl(
+              Uri.parse('https://pullingal-soorath.web.app/'),
+              mode: LaunchMode.externalApplication,
+            ),
+          ),
           Container(
             margin: const EdgeInsets.symmetric(vertical: 10),
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),

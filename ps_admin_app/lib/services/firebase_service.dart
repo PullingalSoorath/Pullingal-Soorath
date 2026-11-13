@@ -239,6 +239,47 @@ class PortfolioFirebaseService {
     await batch.commit();
   }
 
+  Future<void> sendAdminVoiceMessage({
+    required String chatId,
+    required Uint8List audioBytes,
+    double? durationSeconds,
+  }) async {
+    final adminUser = _auth.currentUser;
+    if (adminUser == null) throw Exception('Admin is not signed in.');
+
+    final base64String = base64Encode(audioBytes);
+    final dataUri = 'data:audio/mp4;base64,$base64String';
+
+    final batch = _firestore.batch();
+
+    final messageDocRef = _firestore
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .doc();
+
+    batch.set(messageDocRef, {
+      'senderId': adminUser.uid,
+      'senderRole': 'adminPS',
+      'type': 'audio',
+      'text': '🎤 Voice Note',
+      'mediaUrl': dataUri,
+      'audioDuration': durationSeconds ?? 0.0,
+      'createdAt': FieldValue.serverTimestamp(),
+      'isRead': false,
+    });
+
+    final threadRef = _firestore.collection('chats').doc(chatId);
+    batch.update(threadRef, {
+      'lastMessage': '🎤 Voice Note',
+      'lastMessageTimestamp': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+      'unreadCountUser': FieldValue.increment(1),
+    });
+
+    await batch.commit();
+  }
+
   // --------------------------------------------------------------------------
   // RESUME DOWNLOAD METRICS
   // --------------------------------------------------------------------------

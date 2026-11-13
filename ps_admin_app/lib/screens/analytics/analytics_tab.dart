@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../services/firebase_service.dart';
 import '../../theme/app_theme.dart';
 
@@ -67,6 +68,23 @@ class AnalyticsTab extends StatelessWidget {
               const Text(
                 'Firestore collections: messages • chats • users • resumes',
                 style: TextStyle(color: AppTheme.textMuted, fontSize: 11),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: () => launchUrl(
+                  Uri.parse('https://pullingal-soorath.web.app/'),
+                  mode: LaunchMode.externalApplication,
+                ),
+                icon: const Icon(Icons.open_in_new, size: 14, color: AppTheme.cyan),
+                label: const Text(
+                  'OPEN LIVE WEBSITE',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: AppTheme.cyan),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: AppTheme.cyan),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
               ),
             ],
           ),
