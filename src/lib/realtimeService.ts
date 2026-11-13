@@ -22,7 +22,7 @@ export interface ISTTimeData {
   minutes: number;
 }
 
-const SESSION_CACHE_KEY = 'ps_visitor_weather_cache_v2';
+const SESSION_CACHE_KEY = 'ps_visitor_weather_cache_v4';
 const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes session cache
 
 interface IpGeoResult {
@@ -145,7 +145,14 @@ function getSessionCachedWeather(): LiveWeatherData | null {
     const raw = sessionStorage.getItem(SESSION_CACHE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (parsed && parsed.timestamp && Date.now() - parsed.timestamp < CACHE_TTL_MS && parsed.data) {
+      if (
+        parsed &&
+        parsed.timestamp &&
+        Date.now() - parsed.timestamp < CACHE_TTL_MS &&
+        parsed.data &&
+        parsed.data.location &&
+        parsed.data.location !== 'My Location'
+      ) {
         return parsed.data as LiveWeatherData;
       }
     }
@@ -157,6 +164,7 @@ function getSessionCachedWeather(): LiveWeatherData | null {
 
 function setSessionCachedWeather(data: LiveWeatherData) {
   try {
+    if (data.location === 'My Location') return;
     sessionStorage.setItem(
       SESSION_CACHE_KEY,
       JSON.stringify({ data, timestamp: Date.now() })
@@ -164,6 +172,36 @@ function setSessionCachedWeather(data: LiveWeatherData) {
   } catch {
     // ignore
   }
+}
+
+/**
+ * Free client-side reverse geocoding to resolve (lat, lon) coordinates into an exact city name.
+ */
+export async function reverseGeocodeCoords(lat: number, lon: number): Promise<string | null> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3500);
+    const res = await fetch(
+      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`,
+      { signal: controller.signal }
+    );
+    clearTimeout(timeout);
+    if (res.ok) {
+      const data = await res.json();
+      const place =
+        data.city ||
+        data.locality ||
+        data.localityInfo?.administrative?.[3]?.name ||
+        data.localityInfo?.administrative?.[2]?.name ||
+        data.principalSubdivision;
+      if (place && place !== 'My Location') {
+        return place;
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return null;
 }
 
 /**
@@ -182,7 +220,7 @@ async function fetchSilentIpLocation(): Promise<IpGeoResult> {
       if (data.success && typeof data.latitude === 'number' && typeof data.longitude === 'number') {
         const city = data.city || data.region || DEFAULT_FALLBACK_LOCATION.city;
         return {
-          city,
+          city: city !== 'My Location' ? city : DEFAULT_FALLBACK_LOCATION.city,
           latitude: data.latitude,
           longitude: data.longitude,
           country: data.country,
@@ -204,7 +242,7 @@ async function fetchSilentIpLocation(): Promise<IpGeoResult> {
       if (typeof data.latitude === 'number' && typeof data.longitude === 'number') {
         const city = data.cityName || data.regionName || DEFAULT_FALLBACK_LOCATION.city;
         return {
-          city,
+          city: city !== 'My Location' ? city : DEFAULT_FALLBACK_LOCATION.city,
           latitude: data.latitude,
           longitude: data.longitude,
           country: data.countryName,
@@ -226,7 +264,7 @@ async function fetchSilentIpLocation(): Promise<IpGeoResult> {
       if (!data.error && typeof data.latitude === 'number' && typeof data.longitude === 'number') {
         const city = data.city || data.region || DEFAULT_FALLBACK_LOCATION.city;
         return {
-          city,
+          city: city !== 'My Location' ? city : DEFAULT_FALLBACK_LOCATION.city,
           latitude: data.latitude,
           longitude: data.longitude,
           country: data.country_name,
@@ -296,8 +334,8 @@ export async function fetchLiveWeather(forceRefresh: boolean = false): Promise<L
 }
 
 /**
- * Optional: Manual GPS Weather Request triggered ONLY by an explicit user button click.
- * Never called automatically on load.
+ * Manual GPS Weather Request triggered ONLY by an explicit user button click.
+ * Reverse-geocodes exact coordinates into actual town/city name so "My Location" is never displayed.
  */
 export async function requestPreciseGpsWeather(): Promise<LiveWeatherData | null> {
   if (typeof window === 'undefined' || !navigator.geolocation) return null;
@@ -308,6 +346,8 @@ export async function requestPreciseGpsWeather(): Promise<LiveWeatherData | null
         try {
           const lat = pos.coords.latitude;
           const lon = pos.coords.longitude;
+
+          // 1. Fetch live weather
           const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,is_day`;
           const res = await fetch(weatherUrl);
           if (res.ok) {
@@ -318,11 +358,18 @@ export async function requestPreciseGpsWeather(): Promise<LiveWeatherData | null
             const code = current.weather_code;
             const { condition, iconType } = mapWmoWeather(code, isDay);
 
+            // 2. Reverse geocode coordinates to get the actual city/town name
+            let actualCity = await reverseGeocodeCoords(lat, lon);
+            if (!actualCity || actualCity === 'My Location') {
+              const ipGeo = await fetchSilentIpLocation();
+              actualCity = ipGeo.city || 'Thirupuram';
+            }
+
             const weatherData: LiveWeatherData = {
               temp,
               condition,
-              location: 'My Location',
-              city: 'My Location',
+              location: actualCity,
+              city: actualCity,
               isDay,
               weatherCode: code,
               humidity: current.relative_humidity_2m,

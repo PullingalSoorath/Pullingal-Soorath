@@ -300,6 +300,14 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
   });
   const [isRefreshingWeather, setIsRefreshingWeather] = useState(false);
 
+  // Clean display location helper that guarantees "My Location" is never displayed
+  const displayLocation =
+    liveWeather.location && liveWeather.location !== 'My Location'
+      ? liveWeather.location.split(',')[0]
+      : liveWeather.city && liveWeather.city !== 'My Location'
+      ? liveWeather.city
+      : 'Thirupuram';
+
   // Manual refresh / location trigger (Optionally calls precise GPS only on explicit user click)
   const handleManualWeatherRefresh = async (e?: React.MouseEvent) => {
     if (e) {
@@ -308,12 +316,20 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
     }
     setIsRefreshingWeather(true);
     sound.playClick();
+    try {
+      sessionStorage.removeItem('ps_visitor_weather_cache_v2');
+      sessionStorage.removeItem('ps_visitor_weather_cache_v3');
+      sessionStorage.removeItem('ps_visitor_weather_cache_v4');
+    } catch {}
+
     const gpsRes = await requestPreciseGpsWeather();
-    if (gpsRes) {
+    if (gpsRes && gpsRes.location && gpsRes.location !== 'My Location') {
       setLiveWeather(gpsRes);
     } else {
       const refreshed = await fetchLiveWeather(true);
-      setLiveWeather(refreshed);
+      if (refreshed && refreshed.location && refreshed.location !== 'My Location') {
+        setLiveWeather(refreshed);
+      }
     }
     setIsRefreshingWeather(false);
   };
@@ -820,7 +836,7 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
                   </div>
                   <div className="text-xs font-space font-medium text-slate-200">{currentDate}</div>
                   <div className="text-xs font-mono text-[#00F5FF]">
-                    {liveWeather.location} &bull; {liveWeather.temp}&deg;C {liveWeather.condition}
+                    {displayLocation} &bull; {liveWeather.temp}&deg;C {liveWeather.condition}
                   </div>
 
                   {/* Quick Shortcuts */}
@@ -915,7 +931,7 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
                     </span>
                     {isLandscape && (
                       <span className="text-[9px] text-slate-400 hidden sm:inline">
-                        &bull; {liveWeather.location} &bull; {liveWeather.temp}&deg;C
+                        &bull; {displayLocation} &bull; {liveWeather.temp}&deg;C
                       </span>
                     )}
                   </div>
@@ -1088,7 +1104,7 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
                                   title="Click to refresh live weather or use precise location"
                                 >
                                   <MapPin className="w-3 h-3 text-[#00F5FF] shrink-0" />
-                                  <span className="truncate">{liveWeather.location.split(',')[0]}</span>
+                                  <span className="truncate">{displayLocation}</span>
                                   <RefreshCw
                                     className={`w-2.5 h-2.5 text-slate-400 hover:text-white shrink-0 ${
                                       isRefreshingWeather ? 'animate-spin text-[#00F5FF]' : ''
@@ -1140,7 +1156,7 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
                                     title="Click to refresh live weather"
                                   >
                                     <MapPin className="w-3.5 h-3.5 text-[#00F5FF] shrink-0" />
-                                    <span className="truncate">{liveWeather.location}</span>
+                                    <span className="truncate">{displayLocation}</span>
                                     <RefreshCw
                                       className={`w-3 h-3 text-slate-400 hover:text-white shrink-0 ml-1 ${
                                         isRefreshingWeather ? 'animate-spin text-[#00F5FF]' : ''
