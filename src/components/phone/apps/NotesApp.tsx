@@ -100,7 +100,12 @@ export const NotesApp: React.FC<NotesAppProps> = ({ isSPenActive = false }) => {
             </span>
           )}
           <button
-            onClick={handleSave}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleSave();
+            }}
             className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-[#00F5FF] text-xs font-mono transition-all"
           >
             {savedAlert ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Save className="w-3.5 h-3.5" />}
@@ -112,7 +117,12 @@ export const NotesApp: React.FC<NotesAppProps> = ({ isSPenActive = false }) => {
       {/* Mode Switcher */}
       <div className="flex items-center justify-center gap-2 p-1 bg-white/5 rounded-xl text-xs font-mono">
         <button
-          onClick={() => setActiveTab('draw')}
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setActiveTab('draw');
+          }}
           className={`flex-1 py-1 rounded-lg transition-all ${
             activeTab === 'draw' ? 'bg-[#00F5FF] text-black font-bold' : 'text-slate-400'
           }`}
@@ -120,7 +130,12 @@ export const NotesApp: React.FC<NotesAppProps> = ({ isSPenActive = false }) => {
           S-Pen Drawing
         </button>
         <button
-          onClick={() => setActiveTab('text')}
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setActiveTab('text');
+          }}
           className={`flex-1 py-1 rounded-lg transition-all ${
             activeTab === 'text' ? 'bg-[#00F5FF] text-black font-bold' : 'text-slate-400'
           }`}
@@ -137,7 +152,10 @@ export const NotesApp: React.FC<NotesAppProps> = ({ isSPenActive = false }) => {
               {palette.map((c) => (
                 <button
                   key={c}
-                  onClick={() => {
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     setColor(c);
                     setIsEraser(false);
                     sound.playClick();
@@ -155,7 +173,10 @@ export const NotesApp: React.FC<NotesAppProps> = ({ isSPenActive = false }) => {
                 {[2, 4, 8].map((w) => (
                   <button
                     key={w}
-                    onClick={() => {
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       setLineWidth(w);
                       sound.playClick();
                     }}
@@ -169,7 +190,10 @@ export const NotesApp: React.FC<NotesAppProps> = ({ isSPenActive = false }) => {
               </div>
 
               <button
-                onClick={() => {
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   setIsEraser(!isEraser);
                   sound.playClick();
                 }}
@@ -182,7 +206,12 @@ export const NotesApp: React.FC<NotesAppProps> = ({ isSPenActive = false }) => {
               </button>
 
               <button
-                onClick={clearCanvas}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  clearCanvas();
+                }}
                 className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400"
                 title="Clear Canvas"
               >
@@ -214,11 +243,12 @@ export const NotesApp: React.FC<NotesAppProps> = ({ isSPenActive = false }) => {
           </div>
         </div>
       ) : (
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col overscroll-contain">
           <textarea
             value={textContent}
             onChange={(e) => setTextContent(e.target.value)}
-            className="flex-1 w-full bg-slate-950 p-3 rounded-2xl border border-white/10 text-xs font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-[#00F5FF] resize-none leading-relaxed"
+            onFocus={(e) => e.target.focus({ preventScroll: true })}
+            className="flex-1 w-full bg-slate-950 p-3 rounded-2xl border border-white/10 text-xs font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-[#00F5FF] resize-none leading-relaxed overscroll-contain"
           />
         </div>
       )}

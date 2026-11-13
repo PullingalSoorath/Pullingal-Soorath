@@ -80,8 +80,13 @@ export const MessagesApp: React.FC = () => {
           </p>
         </div>
         <button
-          onClick={handleCopyEmail}
-          className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 flex items-center gap-1"
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleCopyEmail();
+          }}
+          className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 flex items-center gap-1 cursor-pointer"
           title="Copy Email"
         >
           {copiedEmail ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-slate-400" />}
@@ -91,7 +96,7 @@ export const MessagesApp: React.FC = () => {
 
       {!isSent ? (
         /* Message Composition Form */
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-3 space-y-2.5">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto overscroll-contain p-3 space-y-2.5">
           {/* Recipient Pill */}
           <div className="p-2.5 rounded-2xl bg-cyan-950/40 border border-[#00F5FF]/30 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -116,11 +121,13 @@ export const MessagesApp: React.FC = () => {
                 <button
                   key={item}
                   type="button"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     sound.playClick();
                     setSubject(item);
                   }}
-                  className={`px-2 py-1 rounded-xl text-[10px] font-mono whitespace-nowrap transition-all ${
+                  className={`px-2 py-1 rounded-xl text-[10px] font-mono whitespace-nowrap transition-all cursor-pointer ${
                     subject === item
                       ? 'bg-[#00F5FF] text-black font-bold'
                       : 'bg-white/5 text-slate-300 hover:text-white'
@@ -140,6 +147,7 @@ export const MessagesApp: React.FC = () => {
               required
               value={senderName}
               onChange={(e) => setSenderName(e.target.value)}
+              onFocus={(e) => e.target.focus({ preventScroll: true })}
               placeholder="e.g. Alex Morgan / Tech Recruiter"
               className="w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#00F5FF]"
             />
@@ -153,6 +161,7 @@ export const MessagesApp: React.FC = () => {
               required
               value={senderContact}
               onChange={(e) => setSenderContact(e.target.value)}
+              onFocus={(e) => e.target.focus({ preventScroll: true })}
               placeholder="e.g. alex@company.com or +1 234..."
               className="w-full bg-slate-900 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#00F5FF]"
             />
@@ -166,6 +175,7 @@ export const MessagesApp: React.FC = () => {
               rows={4}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
+              onFocus={(e) => e.target.focus({ preventScroll: true })}
               placeholder="Write your inquiry or proposal for Pullingal Soorath..."
               className="w-full bg-slate-900 border border-white/10 rounded-xl p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#00F5FF] resize-none"
             />

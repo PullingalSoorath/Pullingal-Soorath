@@ -155,7 +155,7 @@ I hereby declare that all the information provided in this resume is true and ac
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/90 backdrop-blur-2xl animate-fadeIn">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 pt-16 sm:p-6 overflow-y-auto overscroll-contain bg-black/90 backdrop-blur-2xl animate-fadeIn">
       <div
         className="relative w-full max-w-2xl glass-panel rounded-3xl border border-white/20 p-6 sm:p-8 shadow-[0_20px_60px_rgba(0,0,0,0.8)] my-8"
         onClick={(e) => e.stopPropagation()}

@@ -80,7 +80,12 @@ export const PhoneApp: React.FC = () => {
             {['Mute', 'Keypad', 'Speaker', 'Add Call', 'Video', 'Hold'].map((opt) => (
               <button
                 key={opt}
-                onClick={() => sound.playClick()}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  sound.playClick();
+                }}
                 className="p-3 rounded-full bg-white/10 hover:bg-white/20 text-xs font-sans text-slate-200 transition-all flex flex-col items-center gap-1"
               >
                 <span>{opt}</span>
@@ -90,7 +95,12 @@ export const PhoneApp: React.FC = () => {
 
           <div className="flex justify-center">
             <button
-              onClick={endCall}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                endCall();
+              }}
               className="w-16 h-16 rounded-full bg-rose-600 hover:bg-rose-700 flex items-center justify-center shadow-lg active:scale-95 transition-transform"
             >
               <PhoneOff className="w-7 h-7 text-white" />
@@ -106,7 +116,12 @@ export const PhoneApp: React.FC = () => {
       {/* Top tabs */}
       <div className="flex items-center justify-around py-1 border-b border-white/10 text-xs font-space font-semibold text-slate-400">
         <button
-          onClick={() => setActiveTab('keypad')}
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setActiveTab('keypad');
+          }}
           className={`py-1.5 px-3 border-b-2 transition-all ${
             activeTab === 'keypad'
               ? 'text-[#00F5FF] border-[#00F5FF]'
@@ -116,7 +131,12 @@ export const PhoneApp: React.FC = () => {
           Keypad
         </button>
         <button
-          onClick={() => setActiveTab('recents')}
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setActiveTab('recents');
+          }}
           className={`py-1.5 px-3 border-b-2 transition-all ${
             activeTab === 'recents'
               ? 'text-[#00F5FF] border-[#00F5FF]'
@@ -126,7 +146,12 @@ export const PhoneApp: React.FC = () => {
           Recents
         </button>
         <button
-          onClick={() => setActiveTab('contacts')}
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setActiveTab('contacts');
+          }}
           className={`py-1.5 px-3 border-b-2 transition-all ${
             activeTab === 'contacts'
               ? 'text-[#00F5FF] border-[#00F5FF]'
@@ -150,7 +175,12 @@ export const PhoneApp: React.FC = () => {
             </span>
             {dialedNumber && (
               <button
-                onClick={handleDelete}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleDelete();
+                }}
                 className="absolute right-4 p-2 text-slate-400 hover:text-white"
               >
                 <Delete className="w-5 h-5" />
@@ -163,7 +193,12 @@ export const PhoneApp: React.FC = () => {
             {keys.map((k) => (
               <button
                 key={k.num}
-                onClick={() => handleKeyPress(k.num)}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleKeyPress(k.num);
+                }}
                 className="w-14 h-14 mx-auto rounded-full bg-white/5 hover:bg-white/15 active:scale-95 border border-white/5 flex flex-col items-center justify-center transition-all shadow-md group"
               >
                 <span className="text-xl font-bold font-space text-white group-hover:text-[#00F5FF]">
@@ -181,7 +216,12 @@ export const PhoneApp: React.FC = () => {
           {/* Green Call Action Button */}
           <div className="flex justify-center pt-2">
             <button
-              onClick={() => startCall()}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                startCall();
+              }}
               disabled={!dialedNumber}
               className="w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-400 active:scale-95 flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.4)] disabled:opacity-40 transition-all"
             >
@@ -192,7 +232,7 @@ export const PhoneApp: React.FC = () => {
       )}
 
       {activeTab === 'recents' && (
-        <div className="flex-1 overflow-y-auto space-y-2 py-3 px-2">
+        <div className="flex-1 overflow-y-auto overscroll-contain space-y-2 py-3 px-2">
           {[
             { name: 'Pullingal Soorath', num: '+91 7025 2435 79', time: '10:42 AM', type: 'incoming' },
             { name: 'Engineering Team Lead', num: '+91 9847 0000 00', time: 'Yesterday', type: 'outgoing' },
@@ -200,7 +240,9 @@ export const PhoneApp: React.FC = () => {
           ].map((item, i) => (
             <div
               key={i}
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 setDialedNumber(item.num);
                 startCall(item.num);
               }}
@@ -225,7 +267,7 @@ export const PhoneApp: React.FC = () => {
       )}
 
       {activeTab === 'contacts' && (
-        <div className="flex-1 overflow-y-auto space-y-2 py-3 px-2">
+        <div className="flex-1 overflow-y-auto overscroll-contain space-y-2 py-3 px-2">
           {[
             { name: 'Pullingal Soorath (Flutter Dev)', num: '+91 7025 2435 79', badge: 'Engineer' },
             { name: 'Flutter Architecture Office', num: '+91 9847 1111 22', badge: 'Engineering' },
@@ -233,7 +275,9 @@ export const PhoneApp: React.FC = () => {
           ].map((c, i) => (
             <div
               key={i}
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 setDialedNumber(c.num);
                 setActiveTab('keypad');
               }}

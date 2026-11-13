@@ -191,6 +191,7 @@ export const SkillsApp: React.FC = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={(e) => e.target.focus({ preventScroll: true })}
             placeholder="Search skills (e.g. Flutter, BLoC, Figma)..."
             className="w-full bg-slate-900/90 border border-white/10 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#7C4DFF]"
           />
@@ -208,11 +209,14 @@ export const SkillsApp: React.FC = () => {
         ].map((cat) => (
           <button
             key={cat.id}
-            onClick={() => {
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
               sound.playClick();
               setActiveCategory(cat.id as typeof activeCategory);
             }}
-            className={`px-2.5 py-1 rounded-xl text-[10px] font-mono whitespace-nowrap transition-all ${
+            className={`px-2.5 py-1 rounded-xl text-[10px] font-mono whitespace-nowrap transition-all cursor-pointer ${
               activeCategory === cat.id
                 ? 'bg-[#7C4DFF] text-white font-bold shadow-[0_0_10px_rgba(124,77,255,0.4)]'
                 : 'bg-white/5 text-slate-400 hover:text-white'
@@ -224,13 +228,15 @@ export const SkillsApp: React.FC = () => {
       </div>
 
       {/* Skills List */}
-      <div className="flex-1 overflow-y-auto px-2.5 pb-3 space-y-2">
+      <div className="flex-1 overflow-y-auto overscroll-contain px-2.5 pb-3 space-y-2">
         {filteredSkills.map((skill) => {
           const Icon = skill.icon;
           return (
             <div
               key={skill.name}
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 sound.playClick();
                 setSelectedSkill(skill);
               }}

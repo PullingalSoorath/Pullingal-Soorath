@@ -112,7 +112,9 @@ export const RealtimeChatApp: React.FC<RealtimeChatAppProps> = ({
   const [uploadingPreview, setUploadingPreview] = useState<string | null>(null);
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
 
-  // Auto-scroll ref
+  // Auto-scroll ref & internal chat container ref (isolates scroll, never moves outer webpage)
+  const chatContainerRef = useRef<HTMLDivElement | null>(null);
+  const messageInputRef = useRef<HTMLInputElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   // Subscribe to Auth state
@@ -173,9 +175,17 @@ export const RealtimeChatApp: React.FC<RealtimeChatAppProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Auto-scroll to bottom of messages
+  // Auto-scroll to bottom of messages (only scrolls internal chat container, never main webpage)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+    const timer = setTimeout(() => {
+      if (chatContainerRef.current) {
+        chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      }
+    }, 40);
+    return () => clearTimeout(timer);
   }, [messages]);
 
   // Handle Google Sign-In
@@ -224,6 +234,7 @@ export const RealtimeChatApp: React.FC<RealtimeChatAppProps> = ({
       setInputText(text);
     } finally {
       setIsSending(false);
+      messageInputRef.current?.focus({ preventScroll: true });
     }
   };
 
@@ -392,7 +403,10 @@ export const RealtimeChatApp: React.FC<RealtimeChatAppProps> = ({
           <div className="flex items-center gap-2">
             {onGoHome && (
               <button
-                onClick={() => {
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   sound.playClick();
                   onGoHome();
                 }}
@@ -444,7 +458,12 @@ export const RealtimeChatApp: React.FC<RealtimeChatAppProps> = ({
 
           <div className="space-y-2 max-w-[280px] mx-auto">
             <button
-              onClick={handleSignIn}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleSignIn();
+              }}
               className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-bold text-xs flex items-center justify-center gap-2.5 shadow-lg shadow-cyan-500/25 active:scale-98 transition-all duration-200 cursor-pointer"
             >
               {/* Google G SVG */}
@@ -512,7 +531,10 @@ export const RealtimeChatApp: React.FC<RealtimeChatAppProps> = ({
           <div className="flex items-center gap-2">
             {onGoHome && (
               <button
-                onClick={() => {
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   sound.playClick();
                   onGoHome();
                 }}
@@ -539,7 +561,12 @@ export const RealtimeChatApp: React.FC<RealtimeChatAppProps> = ({
           </div>
 
           <button
-            onClick={handleSignOut}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleSignOut();
+            }}
             className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
             title="Sign Out"
           >
@@ -548,7 +575,7 @@ export const RealtimeChatApp: React.FC<RealtimeChatAppProps> = ({
         </div>
 
         {/* Conversations List */}
-        <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
+        <div className="flex-1 overflow-y-auto overscroll-contain p-2 space-y-1.5">
           {adminThreads.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-4 text-slate-400 space-y-2">
               <MessageSquare className="w-8 h-8 text-slate-600" />
@@ -563,7 +590,9 @@ export const RealtimeChatApp: React.FC<RealtimeChatAppProps> = ({
               return (
                 <div
                   key={thread.id}
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     sound.playClick();
                     setSelectedChatUser(thread);
                   }}
@@ -637,7 +666,10 @@ export const RealtimeChatApp: React.FC<RealtimeChatAppProps> = ({
           {/* Home Button (Returns to One UI home screen) */}
           {onGoHome && (
             <button
-              onClick={() => {
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 sound.playClick();
                 onGoHome();
               }}
@@ -652,7 +684,10 @@ export const RealtimeChatApp: React.FC<RealtimeChatAppProps> = ({
           {/* Admin Back to list button (on mobile or when sidebar closed) */}
           {isAdminView && (!isTablet || !showSidebar) && selectedChatUser && (
             <button
-              onClick={() => {
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 sound.playClick();
                 setSelectedChatUser(null);
               }}
@@ -666,7 +701,10 @@ export const RealtimeChatApp: React.FC<RealtimeChatAppProps> = ({
           {/* Tablet Sidebar Toggle Button */}
           {isTablet && (
             <button
-              onClick={() => {
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 sound.playClick();
                 setShowSidebar(!showSidebar);
               }}
@@ -720,7 +758,12 @@ export const RealtimeChatApp: React.FC<RealtimeChatAppProps> = ({
             </span>
           </div>
           <button
-            onClick={handleSignOut}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleSignOut();
+            }}
             className="p-1.5 rounded-lg bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors cursor-pointer"
             title="Sign Out"
           >
@@ -746,14 +789,16 @@ export const RealtimeChatApp: React.FC<RealtimeChatAppProps> = ({
                     </span>
                   </div>
                 </div>
-                <div className="flex-1 overflow-y-auto p-2 space-y-1">
+                <div className="flex-1 overflow-y-auto overscroll-contain p-2 space-y-1">
                   {adminThreads.map((thread) => {
                     const isSelected = selectedChatUser?.id === thread.id;
                     const hasUnread = thread.unreadCountAdmin > 0;
                     return (
                       <div
                         key={thread.id}
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                           sound.playClick();
                           setSelectedChatUser(thread);
                         }}
@@ -802,7 +847,7 @@ export const RealtimeChatApp: React.FC<RealtimeChatAppProps> = ({
               </div>
             ) : (
               /* Visitor Developer Info Sidebar */
-              <div className="p-4 flex flex-col justify-between h-full space-y-4 overflow-y-auto">
+              <div className="p-4 flex flex-col justify-between h-full space-y-4 overflow-y-auto overscroll-contain">
                 <div className="space-y-3.5">
                   <div className="flex items-center gap-3">
                     <div className="relative shrink-0">
@@ -847,7 +892,10 @@ export const RealtimeChatApp: React.FC<RealtimeChatAppProps> = ({
 
                   {onOpenCVModal && (
                     <button
-                      onClick={() => {
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                         sound.playClick();
                         onOpenCVModal();
                       }}
@@ -873,7 +921,7 @@ export const RealtimeChatApp: React.FC<RealtimeChatAppProps> = ({
         {/* Right Chat Column (Messages + Input) */}
         <div className="flex-1 flex flex-col h-full min-w-0 bg-[#030914] relative">
           {/* Messages Scroll Area */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-2.5 text-xs select-text">
+          <div ref={chatContainerRef} className="flex-1 overflow-y-auto overscroll-contain p-3 space-y-2.5 text-xs select-text">
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center p-4 text-slate-400 space-y-2 select-none">
             <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 shadow-[0_0_20px_rgba(0,245,255,0.15)]">
@@ -999,14 +1047,24 @@ export const RealtimeChatApp: React.FC<RealtimeChatAppProps> = ({
 
           <div className="flex items-center gap-2">
             <button
-              onClick={cancelRecording}
-              className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 text-[11px] font-mono"
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                cancelRecording();
+              }}
+              className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 text-[11px] font-mono cursor-pointer"
             >
               Cancel
             </button>
             <button
-              onClick={stopAndSendRecording}
-              className="px-3 py-1 rounded-lg bg-rose-500 hover:bg-rose-400 text-white font-bold text-[11px] flex items-center gap-1 shadow-lg shadow-rose-500/30"
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                stopAndSendRecording();
+              }}
+              className="px-3 py-1 rounded-lg bg-rose-500 hover:bg-rose-400 text-white font-bold text-[11px] flex items-center gap-1 shadow-lg shadow-rose-500/30 cursor-pointer"
             >
               <Send className="w-3 h-3" /> Send Voice
             </button>
@@ -1017,7 +1075,12 @@ export const RealtimeChatApp: React.FC<RealtimeChatAppProps> = ({
       {/* Bottom Input Bar */}
       {!isRecording && (
         <form
-          onSubmit={handleSendMessage}
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleSendMessage(e);
+          }}
+          onClick={(e) => e.stopPropagation()}
           className="p-2 bg-slate-900/90 border-t border-white/5 flex items-center gap-1.5 shrink-0 z-10"
         >
           {/* Hidden File Input for Images */}
@@ -1032,9 +1095,13 @@ export const RealtimeChatApp: React.FC<RealtimeChatAppProps> = ({
           {/* Attachment Button */}
           <button
             type="button"
-            onClick={() => fileInputRef.current?.click()}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              fileInputRef.current?.click();
+            }}
             disabled={isSending}
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-cyan-400 transition-colors shrink-0 disabled:opacity-50"
+            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-cyan-400 transition-colors shrink-0 disabled:opacity-50 cursor-pointer"
             title="Attach Image"
           >
             <ImageIcon className="w-4 h-4" />
@@ -1043,9 +1110,13 @@ export const RealtimeChatApp: React.FC<RealtimeChatAppProps> = ({
           {/* Voice Note Button */}
           <button
             type="button"
-            onClick={startRecording}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              startRecording();
+            }}
             disabled={isSending}
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-emerald-400 transition-colors shrink-0 disabled:opacity-50"
+            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-emerald-400 transition-colors shrink-0 disabled:opacity-50 cursor-pointer"
             title="Record Voice Note"
           >
             <Mic className="w-4 h-4" />
@@ -1053,8 +1124,14 @@ export const RealtimeChatApp: React.FC<RealtimeChatAppProps> = ({
 
           {/* Text Input */}
           <input
+            ref={messageInputRef}
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
+            onFocus={(e) => {
+              e.target.focus({ preventScroll: true });
+            }}
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
             placeholder={isSending ? 'Uploading...' : 'Type message...'}
             disabled={isSending}
             className="flex-1 bg-black/60 border border-white/10 focus:border-[#00F5FF]/50 rounded-full px-3 py-1.5 text-xs text-white focus:outline-none placeholder:text-slate-500 transition-colors"
@@ -1063,6 +1140,7 @@ export const RealtimeChatApp: React.FC<RealtimeChatAppProps> = ({
           {/* Send Button */}
           <button
             type="submit"
+            onClick={(e) => e.stopPropagation()}
             disabled={!inputText.trim() || isSending}
             className="p-2 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-black font-bold disabled:opacity-30 disabled:cursor-not-allowed shadow-md shadow-cyan-500/20 transition-all shrink-0 cursor-pointer"
           >

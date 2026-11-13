@@ -349,13 +349,60 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
     setScreenState('home');
   };
 
-  const goHome = () => {
+  // Prevent outer window scroll on any interaction or focus inside phone chassis
+  useEffect(() => {
+    const chassis = phoneChassisRef.current;
+    if (!chassis) return;
+
+    let savedScrollY = window.scrollY;
+    let savedScrollX = window.scrollX;
+
+    const handlePointerDown = () => {
+      savedScrollY = window.scrollY;
+      savedScrollX = window.scrollX;
+    };
+
+    const handleClick = (e: MouseEvent) => {
+      e.stopPropagation();
+      if (window.scrollY !== savedScrollY || window.scrollX !== savedScrollX) {
+        window.scrollTo(savedScrollX, savedScrollY);
+      }
+    };
+
+    const handleFocusIn = () => {
+      requestAnimationFrame(() => {
+        if (window.scrollY !== savedScrollY || window.scrollX !== savedScrollX) {
+          window.scrollTo(savedScrollX, savedScrollY);
+        }
+      });
+    };
+
+    chassis.addEventListener('pointerdown', handlePointerDown, { passive: true });
+    chassis.addEventListener('click', handleClick);
+    chassis.addEventListener('focusin', handleFocusIn, { passive: true });
+
+    return () => {
+      chassis.removeEventListener('pointerdown', handlePointerDown);
+      chassis.removeEventListener('click', handleClick);
+      chassis.removeEventListener('focusin', handleFocusIn);
+    };
+  }, []);
+
+  const goHome = (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     sound.playClick();
     setActiveApp(null);
     setQuickSettingsOpen(false);
   };
 
-  const openApp = (appId: string) => {
+  const openApp = (appId: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     sound.playClick();
     setActiveApp(appId);
     setQuickSettingsOpen(false);
@@ -366,6 +413,7 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
 
   return (
     <div
+      onClick={(e) => e.stopPropagation()}
       className={`perspective-2000 w-full transition-all duration-[2000ms] ease-[cubic-bezier(0.32,0.72,0,1)] flex flex-col items-center justify-start sm:justify-center select-none ${
         isCoveringScreen
           ? 'fixed inset-0 z-50 bg-[#020408]/95 backdrop-blur-2xl p-2 sm:p-4 pt-4 sm:pt-6 overflow-y-auto sm:overflow-hidden'
@@ -439,6 +487,8 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
           {/* Physical Device Chassis (Samsung Galaxy Z Fold 6 Kinematics) */}
           <div
             ref={phoneChassisRef}
+            onClick={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
             style={{
               width: isLandscape ? 'min(980px, 94vw)' : 'min(350px, 92vw)',
               height: isLandscape ? 'min(620px, 82vh)' : '690px',
@@ -475,20 +525,35 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
             {/* Volume Rocker (Volume Up & Down) */}
             <div className="w-2.5 h-20 bg-gradient-to-r from-slate-700 via-slate-600 to-slate-800 rounded-r-md border-r border-y border-white/20 shadow-md flex flex-col justify-between py-1 cursor-pointer">
               <button
-                onClick={handleVolumeUp}
-                className="h-9 w-full hover:bg-white/30 transition-colors"
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleVolumeUp();
+                }}
+                className="h-9 w-full hover:bg-white/30 transition-colors cursor-pointer"
                 title="Hardware Volume Up"
               />
               <button
-                onClick={handleVolumeDown}
-                className="h-9 w-full hover:bg-white/30 transition-colors"
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleVolumeDown();
+                }}
+                className="h-9 w-full hover:bg-white/30 transition-colors cursor-pointer"
                 title="Hardware Volume Down"
               />
             </div>
 
             {/* Power Button */}
             <button
-              onClick={handlePowerButton}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handlePowerButton();
+              }}
               className="w-2.5 h-12 bg-gradient-to-r from-slate-700 via-slate-600 to-slate-800 rounded-r-md border-r border-y border-white/20 shadow-md hover:bg-white/30 transition-colors cursor-pointer"
               title="Hardware Power Button (Sleep/Wake)"
             />
@@ -497,19 +562,34 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
           /* Tablet Hardware Buttons on Top Bezel */
           <div className="absolute -top-2 right-16 z-20 flex items-center gap-3">
             <button
-              onClick={handlePowerButton}
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handlePowerButton();
+              }}
               className="w-12 h-2 bg-gradient-to-t from-slate-700 via-slate-600 to-slate-800 rounded-t-md border-t border-x border-white/20 shadow-md hover:bg-white/30 transition-colors cursor-pointer"
               title="Tablet Power Button"
             />
             <div className="w-20 h-2 bg-gradient-to-t from-slate-700 via-slate-600 to-slate-800 rounded-t-md border-t border-x border-white/20 shadow-md flex justify-between px-1 cursor-pointer">
               <button
-                onClick={handleVolumeDown}
-                className="w-9 h-full hover:bg-white/30 transition-colors"
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleVolumeDown();
+                }}
+                className="w-9 h-full hover:bg-white/30 transition-colors cursor-pointer"
                 title="Volume Down"
               />
               <button
-                onClick={handleVolumeUp}
-                className="w-9 h-full hover:bg-white/30 transition-colors"
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleVolumeUp();
+                }}
+                className="w-9 h-full hover:bg-white/30 transition-colors cursor-pointer"
                 title="Volume Up"
               />
             </div>
@@ -578,7 +658,7 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
             </div>
 
             {/* SCREEN VIEWPORT CONTAINER */}
-            <div className="relative w-full h-full z-20 flex flex-col justify-between overflow-hidden select-none">
+            <div className="relative w-full h-full z-20 flex flex-col justify-between overflow-hidden overscroll-contain select-none">
 
             {/* VERTICAL VOLUME SLIDER HUD OVERLAY */}
             {showVolumeHud && (
@@ -602,34 +682,53 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
                     <PenTool className="w-3.5 h-3.5" />
                     <span>Air Command</span>
                   </div>
-                  <button onClick={() => setAirCommandOpen(false)} className="text-slate-400 hover:text-white">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setAirCommandOpen(false);
+                    }}
+                    className="text-slate-400 hover:text-white cursor-pointer"
+                  >
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
 
                 <div className="space-y-1 text-xs font-sans">
                   <button
-                    onClick={() => {
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       sound.playClick();
-                      openApp('notes');
+                      openApp('notes', e);
                       setAirCommandOpen(false);
                     }}
-                    className="w-full p-2 rounded-xl bg-white/5 hover:bg-amber-500/20 text-left text-white flex items-center gap-2 transition-colors"
+                    className="w-full p-2 rounded-xl bg-white/5 hover:bg-amber-500/20 text-left text-white flex items-center gap-2 transition-colors cursor-pointer"
                   >
                     <span>📝 Create Note</span>
                   </button>
                   <button
-                    onClick={() => {
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       sound.playShutter();
                       setAirCommandOpen(false);
                     }}
-                    className="w-full p-2 rounded-xl bg-white/5 hover:bg-amber-500/20 text-left text-white flex items-center gap-2 transition-colors"
+                    className="w-full p-2 rounded-xl bg-white/5 hover:bg-amber-500/20 text-left text-white flex items-center gap-2 transition-colors cursor-pointer"
                   >
                     <span>📸 Screen Capture</span>
                   </button>
                   <button
-                    onClick={() => toggleSPen()}
-                    className="w-full p-2 rounded-xl bg-amber-500/10 text-amber-300 text-left flex items-center gap-2"
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      toggleSPen();
+                    }}
+                    className="w-full p-2 rounded-xl bg-amber-500/10 text-amber-300 text-left flex items-center gap-2 cursor-pointer"
                   >
                     <span>↩️ Insert S-Pen</span>
                   </button>
@@ -711,23 +810,29 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
                   {/* Quick Shortcuts */}
                   <div className="flex items-center gap-3 pt-3">
                     <button
-                      onClick={() => {
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                         handleUnlock();
-                        openApp('profile');
+                        openApp('profile', e);
                       }}
-                      className="p-2.5 rounded-full bg-black/50 border border-white/10 text-[#00F5FF] hover:scale-110 transition-transform"
+                      className="p-2.5 rounded-full bg-black/50 border border-white/10 text-[#00F5FF] hover:scale-110 transition-transform cursor-pointer"
                       title="Profile"
                     >
                       <User className="w-4 h-4" />
                     </button>
 
                     <button
-                      onClick={() => {
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                         handleUnlock();
-                        openApp('messages');
+                        openApp('messages', e);
                       }}
-                      className="p-2.5 rounded-full bg-black/50 border border-white/10 text-emerald-400 hover:scale-110 transition-transform"
-                      title="Messages"
+                      className="p-2.5 rounded-full bg-black/50 border border-white/10 text-emerald-400 hover:scale-110 transition-transform cursor-pointer"
+                      title="Mail"
                     >
                       <Mail className="w-4 h-4" />
                     </button>
@@ -759,8 +864,13 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
                   {/* Fingerprint Scanner with Ultrasonic Ripple */}
                   <div className="flex flex-col items-center gap-1.5 pb-1">
                     <button
-                      onClick={handleUnlock}
-                      className="relative w-12 h-12 rounded-full bg-cyan-500/20 hover:bg-cyan-500/30 border border-[#00F5FF]/50 flex items-center justify-center group active:scale-95 transition-all shadow-[0_0_20px_rgba(0,245,255,0.4)]"
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleUnlock();
+                      }}
+                      className="relative w-12 h-12 rounded-full bg-cyan-500/20 hover:bg-cyan-500/30 border border-[#00F5FF]/50 flex items-center justify-center group active:scale-95 transition-all shadow-[0_0_20px_rgba(0,245,255,0.4)] cursor-pointer"
                     >
                       <Fingerprint className="w-7 h-7 text-[#00F5FF] group-hover:scale-110 transition-transform" />
                       <span className="absolute inset-0 rounded-full bg-[#00F5FF]/30 animate-ping pointer-events-none" />
@@ -818,11 +928,14 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
                     {/* Quick Toggle Tiles */}
                     <div className="grid grid-cols-4 gap-2 text-center">
                       <button
-                        onClick={() => {
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                           sound.playClick();
                           setWifiEnabled(!wifiEnabled);
                         }}
-                        className={`p-2.5 rounded-2xl flex flex-col items-center gap-1 transition-all ${
+                        className={`p-2.5 rounded-2xl flex flex-col items-center gap-1 transition-all cursor-pointer ${
                           wifiEnabled ? 'bg-[#00F5FF] text-black shadow-md' : 'bg-white/10 text-slate-400'
                         }`}
                       >
@@ -831,22 +944,28 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
                       </button>
 
                       <button
-                        onClick={() => {
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                           sound.playClick();
                           setSoundMode((s) => (s === 'sound' ? 'vibrate' : s === 'vibrate' ? 'mute' : 'sound'));
                         }}
-                        className="p-2.5 rounded-2xl bg-[#3D5AFE] text-white shadow-md flex flex-col items-center gap-1 transition-all"
+                        className="p-2.5 rounded-2xl bg-[#3D5AFE] text-white shadow-md flex flex-col items-center gap-1 transition-all cursor-pointer"
                       >
                         <Volume2 className="w-4 h-4" />
                         <span className="text-[9px] font-mono font-bold capitalize">{soundMode}</span>
                       </button>
 
                       <button
-                        onClick={() => {
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                           sound.playClick();
                           setBluetoothEnabled(!bluetoothEnabled);
                         }}
-                        className={`p-2.5 rounded-2xl flex flex-col items-center gap-1 transition-all ${
+                        className={`p-2.5 rounded-2xl flex flex-col items-center gap-1 transition-all cursor-pointer ${
                           bluetoothEnabled ? 'bg-[#7C4DFF] text-white shadow-md' : 'bg-white/10 text-slate-400'
                         }`}
                       >
@@ -856,11 +975,14 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
 
                       {/* Mode Toggle: Switch to Tablet / Switch to Smartphone */}
                       <button
-                        onClick={() => {
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                           toggleFold();
                           setQuickSettingsOpen(false);
                         }}
-                        className="p-2.5 rounded-2xl bg-gradient-to-br from-[#00F5FF]/20 to-[#7C4DFF]/20 border border-[#00F5FF]/60 text-white shadow-md flex flex-col items-center gap-1 transition-all hover:scale-105 active:scale-95"
+                        className="p-2.5 rounded-2xl bg-gradient-to-br from-[#00F5FF]/20 to-[#7C4DFF]/20 border border-[#00F5FF]/60 text-white shadow-md flex flex-col items-center gap-1 transition-all hover:scale-105 active:scale-95 cursor-pointer"
                         title={isLandscape ? 'Switch to Smartphone Portrait View' : 'Switch to Tablet Landscape View'}
                       >
                         {isLandscape ? (
@@ -892,7 +1014,15 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
 
                     <div className="text-[10px] font-mono text-slate-400 flex items-center justify-between pt-1">
                       <span>{isLandscape ? 'Tablet Workstation [Fold 6 Kinematics]' : 'Smart Phone [PS Edition]'}</span>
-                      <button onClick={() => setQuickSettingsOpen(false)} className="text-[#00F5FF] hover:underline">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setQuickSettingsOpen(false);
+                        }}
+                        className="text-[#00F5FF] hover:underline cursor-pointer"
+                      >
                         Close Shade
                       </button>
                     </div>
@@ -1061,7 +1191,7 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
                                 bgGradient={app.bgGradient}
                                 badge={app.badge}
                                 compact={isLandscape}
-                                onClick={() => openApp(app.id)}
+                                onClick={(e) => openApp(app.id, e)}
                               />
                             </div>
                           );
@@ -1094,7 +1224,8 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
                         className="absolute z-10 glass-panel p-2 rounded-2xl sm:rounded-3xl border border-white/10 flex items-center justify-around shadow-2xl backdrop-blur-2xl"
                       >
                         <button
-                          onClick={() => openApp('profile')}
+                          type="button"
+                          onClick={(e) => openApp('profile', e)}
                           className="flex items-center gap-1.5 px-3 py-1.5 sm:py-2 rounded-2xl bg-white/5 hover:bg-cyan-500/20 text-white hover:scale-105 active:scale-95 transition-all duration-200 border border-white/10 hover:border-cyan-500/30 cursor-pointer"
                           title="Profile (Pullingal Soorath)"
                         >
@@ -1102,7 +1233,8 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
                           {isLandscape && <span className="text-xs font-sans font-medium text-white">Profile</span>}
                         </button>
                         <button
-                          onClick={() => openApp('gallery')}
+                          type="button"
+                          onClick={(e) => openApp('gallery', e)}
                           className="flex items-center gap-1.5 px-3 py-1.5 sm:py-2 rounded-2xl bg-white/5 hover:bg-rose-500/20 text-white hover:scale-105 active:scale-95 transition-all duration-200 border border-white/10 hover:border-rose-500/30 cursor-pointer"
                           title="Gallery (Projects)"
                         >
@@ -1110,7 +1242,8 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
                           {isLandscape && <span className="text-xs font-sans font-medium text-white">Gallery</span>}
                         </button>
                         <button
-                          onClick={() => openApp('skills')}
+                          type="button"
+                          onClick={(e) => openApp('skills', e)}
                           className="flex items-center gap-1.5 px-3 py-1.5 sm:py-2 rounded-2xl bg-white/5 hover:bg-violet-500/20 text-white hover:scale-105 active:scale-95 transition-all duration-200 border border-white/10 hover:border-violet-500/30 cursor-pointer"
                           title="Skills (Flutter, Dart, UI/UX)"
                         >
@@ -1118,7 +1251,8 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
                           {isLandscape && <span className="text-xs font-sans font-medium text-white">Skills</span>}
                         </button>
                         <button
-                          onClick={() => openApp('messages')}
+                          type="button"
+                          onClick={(e) => openApp('messages', e)}
                           className="flex items-center gap-1.5 px-3 py-1.5 sm:py-2 rounded-2xl bg-white/5 hover:bg-emerald-500/20 text-white hover:scale-105 active:scale-95 transition-all duration-200 border border-white/10 hover:border-emerald-500/30 cursor-pointer"
                           title="Mail"
                         >
@@ -1126,7 +1260,8 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
                           {isLandscape && <span className="text-xs font-sans font-medium text-white">Mail</span>}
                         </button>
                         <button
-                          onClick={() => openApp('chat')}
+                          type="button"
+                          onClick={(e) => openApp('chat', e)}
                           className="flex items-center gap-1.5 px-3 py-1.5 sm:py-2 rounded-2xl bg-white/5 hover:bg-cyan-500/20 text-white hover:scale-105 active:scale-95 transition-all duration-200 border border-white/10 hover:border-cyan-500/30 cursor-pointer"
                           title="Chat"
                         >
@@ -1137,11 +1272,12 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
                     </div>
                   ) : (
                     /* IN-APP CONTAINER (Edge-to-edge for tablet & chat app) */
-                    <div className={`flex-1 min-h-0 flex flex-col ${isLandscape || activeApp === 'chat' ? 'p-0' : 'p-2'} overflow-hidden animate-fluid-scale`}>
+                    <div className={`flex-1 min-h-0 flex flex-col ${isLandscape || activeApp === 'chat' ? 'p-0' : 'p-2'} overflow-hidden overscroll-contain animate-fluid-scale`}>
                       {activeApp !== 'chat' && (
                         <div className={`flex items-center justify-between pb-1.5 mb-1.5 border-b border-white/10 shrink-0 ${isLandscape ? 'px-3 pt-2 bg-[#060a14]/90' : ''}`}>
                           <button
-                            onClick={goHome}
+                            type="button"
+                            onClick={(e) => goHome(e)}
                             onMouseEnter={() => sound.playHover()}
                             className="flex items-center gap-1 text-xs font-mono text-[#00F5FF] hover:underline font-semibold cursor-pointer"
                           >
@@ -1154,7 +1290,7 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
                         </div>
                       )}
 
-                      <div className="flex-1 min-h-0 overflow-hidden relative">
+                      <div className="flex-1 min-h-0 overflow-hidden overscroll-contain relative">
                         {activeApp === 'profile' && (
                           <ProfileApp
                             onOpenCVModal={onOpenCVModal}
@@ -1201,24 +1337,39 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
                     }`}
                   >
                     <button
-                      onClick={() => setQuickSettingsOpen(!quickSettingsOpen)}
-                      className="text-slate-400 hover:text-white p-1 active:scale-90 transition-all duration-200"
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setQuickSettingsOpen(!quickSettingsOpen);
+                      }}
+                      className="text-slate-400 hover:text-white p-1 active:scale-90 transition-all duration-200 cursor-pointer"
                       title="Recents"
                     >
                       <MenuIcon className="w-3.5 h-3.5" />
                     </button>
 
-                    <button onClick={goHome} className="p-1 px-4 text-slate-300 hover:text-[#00F5FF] active:scale-95 transition-all duration-200" title="Home">
+                    <button
+                      type="button"
+                      onClick={(e) => goHome(e)}
+                      className="p-1 px-4 text-slate-300 hover:text-[#00F5FF] active:scale-95 transition-all duration-200 cursor-pointer"
+                      title="Home"
+                    >
                       <div className="w-8 h-1 rounded-full bg-slate-400 hover:bg-[#00F5FF] hover:w-10 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]" />
                     </button>
 
-                    <button onClick={goHome} className="text-slate-400 hover:text-white p-1 active:scale-90 transition-all duration-200" title="Back">
+                    <button
+                      type="button"
+                      onClick={(e) => goHome(e)}
+                      className="text-slate-400 hover:text-white p-1 active:scale-90 transition-all duration-200 cursor-pointer"
+                      title="Back"
+                    >
                       <ChevronLeft className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 ) : (
                   <div
-                    onClick={goHome}
+                    onClick={(e) => goHome(e)}
                     className={`relative z-40 flex items-center justify-center cursor-pointer hover:bg-white/5 ${
                       isLandscape ? 'h-4' : 'h-5'
                     }`}
@@ -1245,12 +1396,15 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
           {/* Switch to 3D Orbit */}
           {onSwitchTo3D && (
             <button
-              onClick={() => {
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 sound.playClick();
                 onSwitchTo3D();
               }}
               onMouseEnter={() => sound.playHover()}
-              className="glass-panel px-3.5 py-2.5 rounded-2xl text-xs font-mono font-bold tracking-wider text-[#00F5FF] bg-[#050811]/90 border border-[#00F5FF]/50 hover:bg-[#00F5FF]/20 hover:border-[#00F5FF] hover:shadow-[0_0_20px_rgba(0,245,255,0.4)] transition-all flex items-center gap-2 shadow-md backdrop-blur-xl w-full"
+              className="glass-panel px-3.5 py-2.5 rounded-2xl text-xs font-mono font-bold tracking-wider text-[#00F5FF] bg-[#050811]/90 border border-[#00F5FF]/50 hover:bg-[#00F5FF]/20 hover:border-[#00F5FF] hover:shadow-[0_0_20px_rgba(0,245,255,0.4)] transition-all flex items-center gap-2 shadow-md backdrop-blur-xl w-full cursor-pointer"
               title="Return to 3D Orbit Monolith"
             >
               <RotateCw className="w-3.5 h-3.5 text-[#00F5FF]" />
@@ -1260,9 +1414,14 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
 
           {/* Tablet Mode */}
           <button
-            onClick={toggleFold}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              toggleFold();
+            }}
             onMouseEnter={() => sound.playHover()}
-            className="glass-panel px-3.5 py-2.5 rounded-2xl border border-white/10 hover:border-[#00F5FF]/50 hover:bg-[#00F5FF]/10 text-slate-300 hover:text-white transition-all flex items-center gap-2 shadow-md backdrop-blur-md w-full text-xs"
+            className="glass-panel px-3.5 py-2.5 rounded-2xl border border-white/10 hover:border-[#00F5FF]/50 hover:bg-[#00F5FF]/10 text-slate-300 hover:text-white transition-all flex items-center gap-2 shadow-md backdrop-blur-md w-full text-xs cursor-pointer"
             title="Unfold to Tablet View"
           >
             <Tablet className="w-3.5 h-3.5 text-[#00F5FF]" />
@@ -1271,9 +1430,14 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
 
           {/* Eject / Insert S-Pen Stylus */}
           <button
-            onClick={toggleSPen}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              toggleSPen();
+            }}
             onMouseEnter={() => sound.playHover()}
-            className={`glass-panel px-3.5 py-2.5 rounded-2xl border transition-all flex items-center gap-2 shadow-md backdrop-blur-md w-full text-xs ${
+            className={`glass-panel px-3.5 py-2.5 rounded-2xl border transition-all flex items-center gap-2 shadow-md backdrop-blur-md w-full text-xs cursor-pointer ${
               isSPenEjected
                 ? 'border-amber-400 bg-amber-500/20 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.4)]'
                 : 'border-white/10 hover:border-amber-400/50 hover:bg-amber-400/10 text-slate-300 hover:text-white'
@@ -1291,11 +1455,14 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
               {[0.75, 0.85, 1].map((s) => (
                 <button
                   key={s}
-                  onClick={() => {
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
                     sound.playClick();
                     setScaleFactor(s);
                   }}
-                  className={`flex-1 py-1 rounded text-[10px] font-mono transition-colors text-center ${
+                  className={`flex-1 py-1 rounded text-[10px] font-mono transition-colors text-center cursor-pointer ${
                     scaleFactor === s
                       ? 'bg-[#00F5FF] text-black font-bold shadow-[0_0_10px_rgba(0,245,255,0.4)]'
                       : 'text-slate-400 hover:text-white'
@@ -1319,9 +1486,14 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
 
           {/* SWITCH TO PHONE BUTTON (Primary Highlighted Action) */}
           <button
-            onClick={toggleFold}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              toggleFold();
+            }}
             onMouseEnter={() => sound.playHover()}
-            className="glass-panel px-4 py-2.5 rounded-2xl text-xs font-mono font-bold tracking-wider text-[#00F5FF] bg-[#00F5FF]/20 border-2 border-[#00F5FF] hover:bg-[#00F5FF]/30 hover:shadow-[0_0_25px_rgba(0,245,255,0.5)] transition-all flex items-center gap-2 shadow-lg backdrop-blur-xl w-auto xl:w-full justify-center active:scale-95"
+            className="glass-panel px-4 py-2.5 rounded-2xl text-xs font-mono font-bold tracking-wider text-[#00F5FF] bg-[#00F5FF]/20 border-2 border-[#00F5FF] hover:bg-[#00F5FF]/30 hover:shadow-[0_0_25px_rgba(0,245,255,0.5)] transition-all flex items-center gap-2 shadow-lg backdrop-blur-xl w-auto xl:w-full justify-center active:scale-95 cursor-pointer"
             title="Fold back to Smartphone Portrait View"
           >
             <Smartphone className="w-4 h-4 text-[#00F5FF]" />
@@ -1331,13 +1503,16 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
           {/* Switch to 3D Orbit */}
           {onSwitchTo3D && (
             <button
-              onClick={() => {
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 sound.playClick();
                 setIsLandscape(false);
                 onSwitchTo3D();
               }}
               onMouseEnter={() => sound.playHover()}
-              className="glass-panel px-3.5 py-2.5 rounded-2xl text-xs font-mono font-bold tracking-wider text-slate-200 bg-[#050811]/90 border border-white/15 hover:border-[#00F5FF]/60 hover:text-[#00F5FF] transition-all flex items-center gap-2 shadow-md backdrop-blur-xl w-auto xl:w-full justify-center active:scale-95"
+              className="glass-panel px-3.5 py-2.5 rounded-2xl text-xs font-mono font-bold tracking-wider text-slate-200 bg-[#050811]/90 border border-white/15 hover:border-[#00F5FF]/60 hover:text-[#00F5FF] transition-all flex items-center gap-2 shadow-md backdrop-blur-xl w-auto xl:w-full justify-center active:scale-95 cursor-pointer"
               title="Return to 3D Orbit Monolith"
             >
               <RotateCw className="w-3.5 h-3.5 text-[#00F5FF]" />
@@ -1347,9 +1522,14 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
 
           {/* Eject / Insert S-Pen Stylus */}
           <button
-            onClick={toggleSPen}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              toggleSPen();
+            }}
             onMouseEnter={() => sound.playHover()}
-            className={`glass-panel px-3.5 py-2.5 rounded-2xl border transition-all flex items-center gap-2 shadow-md backdrop-blur-md w-auto xl:w-full justify-center text-xs ${
+            className={`glass-panel px-3.5 py-2.5 rounded-2xl border transition-all flex items-center gap-2 shadow-md backdrop-blur-md w-auto xl:w-full justify-center text-xs cursor-pointer ${
               isSPenEjected
                 ? 'border-amber-400 bg-amber-500/20 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.4)]'
                 : 'border-white/10 hover:border-amber-400/50 hover:bg-amber-400/10 text-slate-300 hover:text-white'
@@ -1362,9 +1542,14 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
 
           {/* Close Tablet View */}
           <button
-            onClick={toggleFold}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              toggleFold();
+            }}
             onMouseEnter={() => sound.playHover()}
-            className="glass-panel px-3.5 py-2.5 rounded-2xl border border-rose-500/30 hover:border-rose-500/60 hover:bg-rose-500/10 text-rose-300 hover:text-rose-200 transition-all flex items-center gap-2 shadow-md backdrop-blur-md w-auto xl:w-full justify-center text-xs"
+            className="glass-panel px-3.5 py-2.5 rounded-2xl border border-rose-500/30 hover:border-rose-500/60 hover:bg-rose-500/10 text-rose-300 hover:text-rose-200 transition-all flex items-center gap-2 shadow-md backdrop-blur-md w-auto xl:w-full justify-center text-xs cursor-pointer"
             title="Fold Tablet View"
           >
             <X className="w-4 h-4 text-rose-400" />
@@ -1393,13 +1578,16 @@ const AppIcon: React.FC<{
   bgGradient?: string;
   badge?: string;
   compact?: boolean;
-  onClick: () => void;
+  onClick: (e: React.MouseEvent) => void;
 }> = ({ name, icon: Icon, iconImage, bgGradient = 'from-slate-600 to-slate-800', badge, compact = false, onClick }) => {
   return (
     <button
-      onClick={() => {
+      type="button"
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
         sound.playHover();
-        onClick();
+        onClick(e);
       }}
       className="flex flex-col items-center gap-1 group active:scale-90 transition-transform duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] cursor-pointer"
     >

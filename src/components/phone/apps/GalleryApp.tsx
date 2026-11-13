@@ -210,13 +210,15 @@ export const GalleryApp: React.FC<GalleryAppProps> = ({ onLaunchApp }) => {
       </div>
 
       {/* Grid of Projects */}
-      <div className="flex-1 overflow-y-auto p-2.5 space-y-2.5">
+      <div className="flex-1 overflow-y-auto overscroll-contain p-2.5 space-y-2.5">
         {filteredProjects.map((item) => {
           const Icon = item.icon;
           return (
             <div
               key={item.id}
-              onClick={() => {
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 sound.playClick();
                 setSelectedProject(item);
               }}
@@ -272,7 +274,7 @@ export const GalleryApp: React.FC<GalleryAppProps> = ({ onLaunchApp }) => {
 
       {/* Full Details Modal */}
       {selectedProject && (
-        <div className="absolute inset-0 z-50 bg-[#06080e]/95 backdrop-blur-md p-4 flex flex-col justify-between animate-fadeIn overflow-y-auto">
+        <div className="absolute inset-0 z-50 bg-[#06080e]/95 backdrop-blur-md p-4 flex flex-col justify-between animate-fadeIn overflow-y-auto overscroll-contain">
           <div className="space-y-3">
             {/* Modal Header */}
             <div className="flex items-center justify-between pb-2 border-b border-white/10">
@@ -280,8 +282,13 @@ export const GalleryApp: React.FC<GalleryAppProps> = ({ onLaunchApp }) => {
                 {selectedProject.categoryLabel}
               </span>
               <button
-                onClick={() => setSelectedProject(null)}
-                className="p-1 rounded-full bg-white/10 text-slate-300 hover:text-white"
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setSelectedProject(null);
+                }}
+                className="p-1 rounded-full bg-white/10 text-slate-300 hover:text-white cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>

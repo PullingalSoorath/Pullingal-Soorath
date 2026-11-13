@@ -11,7 +11,7 @@ interface HeroViewport3DProps {
 
 export const HeroViewport3D: React.FC<HeroViewport3DProps> = ({ onOpenCVModal }) => {
   const mountRef = useRef<HTMLDivElement>(null);
-  const [interactivePhoneMode, setInteractivePhoneMode] = useState(false);
+  const [interactivePhoneMode, setInteractivePhoneMode] = useState(true);
   const isDragging = useRef(false);
   const previousMousePosition = useRef({ x: 0, y: 0 });
   const targetRotation = useRef({ x: 0.1, y: -0.2 });

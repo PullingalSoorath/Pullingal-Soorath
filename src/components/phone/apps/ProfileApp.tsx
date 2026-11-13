@@ -7,7 +7,6 @@ import {
   Copy,
   Check,
   Globe,
-  MessageSquare,
   Sparkles,
 } from 'lucide-react';
 import { sound } from '../../audio/audioEngine';
@@ -28,7 +27,7 @@ export const ProfileApp: React.FC<ProfileAppProps> = ({ onOpenCVModal, onOpenMes
   };
 
   return (
-    <div className="h-full bg-[#06080e] text-white animate-fadeIn overflow-y-auto p-3 space-y-3.5 font-sans select-none">
+    <div className="h-full bg-[#06080e] text-white animate-fadeIn overflow-y-auto overscroll-contain p-3 space-y-3.5 font-sans select-none">
       {/* Top Profile Card */}
       <div className="relative p-4 rounded-3xl bg-gradient-to-br from-cyan-950/80 via-slate-900 to-violet-950/80 border border-white/15 shadow-xl text-center">
         <div className="absolute top-0 right-0 w-24 h-24 bg-[#00F5FF]/10 rounded-full blur-xl pointer-events-none" />
@@ -58,11 +57,14 @@ export const ProfileApp: React.FC<ProfileAppProps> = ({ onOpenCVModal, onOpenMes
         <div className="grid grid-cols-2 gap-2 mt-3.5">
           {onOpenCVModal && (
             <button
-              onClick={() => {
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 sound.playClick();
                 onOpenCVModal();
               }}
-              className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#00F5FF] to-[#3D5AFE] text-black font-bold text-xs flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-transform"
+              className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#00F5FF] to-[#3D5AFE] text-black font-bold text-xs flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-transform cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Resume CV</span>
@@ -70,7 +72,10 @@ export const ProfileApp: React.FC<ProfileAppProps> = ({ onOpenCVModal, onOpenMes
           )}
 
           <button
-            onClick={() => {
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
               sound.playClick();
               if (onOpenMessages) {
                 onOpenMessages();
@@ -78,10 +83,10 @@ export const ProfileApp: React.FC<ProfileAppProps> = ({ onOpenCVModal, onOpenMes
                 window.location.href = 'mailto:pullingalsoorath@gmail.com';
               }
             }}
-            className="py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-transform"
+            className="py-2.5 px-3 rounded-xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-transform cursor-pointer"
           >
-            <MessageSquare className="w-3.5 h-3.5 text-[#00F5FF]" />
-            <span>Message Me</span>
+            <Mail className="w-3.5 h-3.5 text-[#00F5FF]" />
+            <span>Mail Me</span>
           </button>
         </div>
       </div>
@@ -96,8 +101,13 @@ export const ProfileApp: React.FC<ProfileAppProps> = ({ onOpenCVModal, onOpenMes
             <span>Email:</span>
           </span>
           <button
-            onClick={() => handleCopy('pullingalsoorath@gmail.com', 'email')}
-            className="flex items-center gap-1 text-[#00F5FF] hover:underline"
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleCopy('pullingalsoorath@gmail.com', 'email');
+            }}
+            className="flex items-center gap-1 text-[#00F5FF] hover:underline cursor-pointer"
           >
             <span className="truncate max-w-[140px]">pullingalsoorath@gmail.com</span>
             {copiedField === 'email' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-slate-500" />}
@@ -110,8 +120,13 @@ export const ProfileApp: React.FC<ProfileAppProps> = ({ onOpenCVModal, onOpenMes
             <span>Phone:</span>
           </span>
           <button
-            onClick={() => handleCopy('+917025243579', 'phone')}
-            className="flex items-center gap-1 text-[#00F5FF] hover:underline"
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleCopy('+917025243579', 'phone');
+            }}
+            className="flex items-center gap-1 text-[#00F5FF] hover:underline cursor-pointer"
           >
             <span>+91 7025 2435 79</span>
             {copiedField === 'phone' ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-slate-500" />}

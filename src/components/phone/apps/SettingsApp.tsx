@@ -56,7 +56,7 @@ export const SettingsApp: React.FC<SettingsAppProps> = ({
       </div>
 
       {activeSection === 'main' && (
-        <div className="flex-1 overflow-y-auto p-2.5 space-y-2 text-xs">
+        <div className="flex-1 overflow-y-auto overscroll-contain p-2.5 space-y-2 text-xs">
           {/* User profile card */}
           <div
             onClick={() => setActiveSection('about')}
@@ -151,7 +151,7 @@ export const SettingsApp: React.FC<SettingsAppProps> = ({
       )}
 
       {activeSection === 'display' && (
-        <div className="flex-1 overflow-y-auto p-3 space-y-4 text-xs">
+        <div className="flex-1 overflow-y-auto overscroll-contain p-3 space-y-4 text-xs">
           <div className="p-3 rounded-2xl bg-slate-900 border border-white/10 space-y-3">
             <h4 className="font-bold text-white text-xs uppercase text-[#00F5FF]">Motion Smoothness</h4>
             <div className="flex items-center justify-between">
@@ -201,7 +201,7 @@ export const SettingsApp: React.FC<SettingsAppProps> = ({
       )}
 
       {activeSection === 'wallpaper' && (
-        <div className="flex-1 overflow-y-auto p-3 space-y-3 text-xs">
+        <div className="flex-1 overflow-y-auto overscroll-contain p-3 space-y-3 text-xs">
           <h4 className="font-bold text-white text-xs uppercase text-[#00F5FF]">Dynamic Live Wallpapers</h4>
           <div className="grid grid-cols-2 gap-3">
             {wallpapers.map((wp) => (
@@ -230,7 +230,7 @@ export const SettingsApp: React.FC<SettingsAppProps> = ({
       )}
 
       {activeSection === 'about' && (
-        <div className="flex-1 overflow-y-auto p-3 space-y-3 font-mono text-xs">
+        <div className="flex-1 overflow-y-auto overscroll-contain p-3 space-y-3 font-mono text-xs">
           <div className="p-3.5 rounded-2xl bg-slate-900 border border-white/10 space-y-2">
             <div className="text-[10px] text-slate-500 uppercase">Hardware & Casing Specs</div>
             <div className="flex justify-between text-slate-200">

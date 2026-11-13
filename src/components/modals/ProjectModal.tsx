@@ -49,14 +49,14 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 md:p-8 overflow-y-auto bg-black/90 backdrop-blur-2xl animate-fadeIn"
+      className="fixed inset-0 z-[1000] flex items-center justify-center p-4 pt-20 sm:p-6 md:p-8 overflow-y-auto overscroll-contain bg-black/90 backdrop-blur-2xl animate-fadeIn"
       onClick={() => {
         sound.playClick();
         onClose();
       }}
     >
       <div
-        className="relative w-full max-w-4xl glass-panel rounded-3xl border border-white/20 p-6 sm:p-10 shadow-[0_25px_80px_rgba(0,0,0,0.95)] my-auto max-h-[90vh] overflow-y-auto"
+        className="relative w-full max-w-4xl glass-panel rounded-3xl border border-white/20 p-6 sm:p-10 shadow-[0_25px_80px_rgba(0,0,0,0.95)] my-auto max-h-[90vh] overflow-y-auto overscroll-contain"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Glow Accent Header */}
@@ -67,6 +67,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
 
         {/* Close Button */}
         <button
+          type="button"
           onClick={() => {
             sound.playClick();
             onClose();
