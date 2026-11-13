@@ -5,7 +5,6 @@ import {
   BatteryCharging,
   Signal,
   MessageSquare,
-  Gamepad2,
   Settings,
   ChevronLeft,
   Sliders,
@@ -23,6 +22,7 @@ import {
   Award,
   Smartphone,
   Tablet,
+  Trophy,
 } from 'lucide-react';
 import { sound } from '../audio/audioEngine';
 import { PhoneApp } from './apps/PhoneApp';
@@ -34,6 +34,7 @@ import { ProfileApp } from './apps/ProfileApp';
 import { SkillsApp } from './apps/SkillsApp';
 import { MessagesApp } from './apps/MessagesApp';
 import { RealtimeChatApp } from './apps/RealtimeChatApp';
+import { Rally3DApp } from './apps/Rally3DApp';
 import { InteractiveWallpaper } from './InteractiveWallpaper';
 
 // Desktop apps catalog for fluid layout morphing (Filtered to core apps + 1-on-1 Realtime Chat)
@@ -43,7 +44,7 @@ const HOME_APPS = [
   { id: 'skills', name: 'Skills', icon: Award, bgGradient: 'from-violet-500 to-indigo-600', badge: 'Flutter' },
   { id: 'messages', name: 'Mail', iconImage: './app-icons/mail.png', icon: Mail, bgGradient: 'from-emerald-500 to-teal-600', badge: 'Email' },
   { id: 'chat', name: 'Chat', iconImage: './app-icons/chat.png', icon: MessageSquare, bgGradient: 'from-cyan-600 to-blue-700', badge: '1-on-1' },
-  { id: 'snake', name: 'Snake Game', icon: Gamepad2, bgGradient: 'from-emerald-600 to-teal-700', badge: 'Play' },
+  { id: 'snake', name: 'Rally 3D', iconImage: './app-icons/rally3d.png', icon: Trophy, bgGradient: 'from-red-600 to-amber-600', badge: '3D' },
   { id: 'settings', name: 'Settings', iconImage: './app-icons/settings.png', icon: Settings, bgGradient: 'from-slate-600 to-slate-800' },
 ];
 
@@ -1275,7 +1276,9 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
                             onGoHome={goHome}
                           />
                         )}
-                        {activeApp === 'snake' && <SnakeAppEmbedded />}
+                        {(activeApp === 'snake' || activeApp === 'rally3d') && (
+                          <Rally3DApp isTablet={isLandscape} onGoHome={goHome} />
+                        )}
                       </div>
                     </div>
                   )}
@@ -1582,96 +1585,6 @@ const AppIcon: React.FC<{
         {name}
       </span>
     </button>
-  );
-};
-
-/* ========================================================
-   EMBEDDED APP ADAPTERS
-   ======================================================== */
-const SnakeAppEmbedded: React.FC = () => {
-  const [snake, setSnake] = useState([{ x: 5, y: 5 }, { x: 5, y: 6 }, { x: 5, y: 7 }]);
-  const [food, setFood] = useState({ x: 8, y: 8 });
-  const [dir, setDir] = useState<'UP' | 'DOWN' | 'LEFT' | 'RIGHT'>('UP');
-  const [score, setScore] = useState(0);
-  const [gameOver, setGameOver] = useState(false);
-  const [isRunning, setIsRunning] = useState(false);
-  const gridSize = 14;
-
-  const reset = () => {
-    sound.playClick();
-    setSnake([{ x: 5, y: 5 }, { x: 5, y: 6 }, { x: 5, y: 7 }]);
-    setFood({ x: 8, y: 8 });
-    setDir('UP');
-    setScore(0);
-    setGameOver(false);
-    setIsRunning(true);
-  };
-
-  useEffect(() => {
-    if (!isRunning || gameOver) return;
-    const t = setInterval(() => {
-      setSnake((prev) => {
-        const head = { ...prev[0] };
-        if (dir === 'UP') head.y -= 1;
-        if (dir === 'DOWN') head.y += 1;
-        if (dir === 'LEFT') head.x -= 1;
-        if (dir === 'RIGHT') head.x += 1;
-
-        if (head.x < 0 || head.x >= gridSize || head.y < 0 || head.y >= gridSize || prev.some((s) => s.x === head.x && s.y === head.y)) {
-          setGameOver(true);
-          sound.playTerminalBeep(300);
-          return prev;
-        }
-
-        const next = [head, ...prev];
-        if (head.x === food.x && head.y === food.y) {
-          sound.playChirp(880, 0.05);
-          setScore((s) => s + 10);
-          setFood({ x: Math.floor(Math.random() * gridSize), y: Math.floor(Math.random() * gridSize) });
-        } else {
-          next.pop();
-        }
-        return next;
-      });
-    }, 180);
-    return () => clearInterval(t);
-  }, [dir, food, gameOver, isRunning]);
-
-  return (
-    <div className="flex flex-col h-full items-center justify-between space-y-2 text-white">
-      <div className="w-full flex justify-between text-xs font-mono px-2">
-        <span className="text-emerald-400 font-bold">SCORE: {score}</span>
-        <span className="text-slate-400">FLUTTER TICKER</span>
-      </div>
-      <div className="relative w-[230px] h-[230px] bg-slate-950 rounded-2xl border-2 border-emerald-500/40 p-1 grid grid-cols-14 grid-rows-14 shadow-inner">
-        {(!isRunning || gameOver) && (
-          <div className="absolute inset-0 bg-black/85 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center space-y-2 z-20">
-            <span className="text-white text-xs font-mono">{gameOver ? `Game Over! Score: ${score}` : 'Flutter Snake Game'}</span>
-            <button onClick={reset} className="px-4 py-1 rounded-full bg-emerald-400 text-black font-bold text-xs">
-              {gameOver ? 'Play Again' : 'Start Game'}
-            </button>
-          </div>
-        )}
-        {Array.from({ length: gridSize * gridSize }).map((_, i) => {
-          const x = i % gridSize;
-          const y = Math.floor(i / gridSize);
-          const isHead = snake[0]?.x === x && snake[0]?.y === y;
-          const isBody = snake.slice(1).some((s) => s.x === x && s.y === y);
-          const isFood = food.x === x && food.y === y;
-          return (
-            <div key={i} className={`w-full h-full rounded-[2px] ${isHead ? 'bg-emerald-400' : isBody ? 'bg-emerald-600' : isFood ? 'bg-rose-500 rounded-full animate-pulse' : ''}`} />
-          );
-        })}
-      </div>
-      <div className="flex flex-col items-center gap-1">
-        <button onClick={() => dir !== 'DOWN' && setDir('UP')} className="w-8 h-8 rounded-lg bg-slate-800 text-xs">▲</button>
-        <div className="flex gap-4">
-          <button onClick={() => dir !== 'RIGHT' && setDir('LEFT')} className="w-8 h-8 rounded-lg bg-slate-800 text-xs">◀</button>
-          <button onClick={() => dir !== 'LEFT' && setDir('RIGHT')} className="w-8 h-8 rounded-lg bg-slate-800 text-xs">▶</button>
-        </div>
-        <button onClick={() => dir !== 'UP' && setDir('DOWN')} className="w-8 h-8 rounded-lg bg-slate-800 text-xs">▼</button>
-      </div>
-    </div>
   );
 };
 
