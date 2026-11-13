@@ -17,7 +17,7 @@ export const CVDownloadModal: React.FC<CVDownloadModalProps> = ({ isOpen, onClos
   const logs = [
     'Establishing secure TLS handshake with Thirupuram, Trivandrum data vault...',
     'Authenticating Professional Flutter Developer credentials & production logs...',
-    'Compiling Real-Time Chat, Gemini AI, Instagram Clone, Nokia Rally 3D, and To-Do case studies...',
+    'Compiling Real-Time Chat, Gemini AI, Instagram Clone, RallyGame 3D, and To-Do case studies...',
     'Rendering PDF asset: Pullingal_Soorath_Flutter_Developer_Resume.pdf...',
     'Verified resume accreditation complete [STATUS: 200 OK].',
   ];
@@ -122,8 +122,8 @@ FEATURED PROJECTS:
 4. YouTube UI Clone (Flutter)
    Created a YouTube app UI clone, showcasing advanced Flutter skills. Proficient in handling video content, custom animations, and search functionalities. Achieved a visually appealing user interface, enhancing user experience.
 
-5. Nokia Rally 3D Game (Three.js & Firebase)
-   Recreated the legendary Nokia Rally 3D racing game with 60FPS physics, dynamic body roll, synthesized audio engine, and Cloud Firestore CRUD high scores leaderboard.
+5. RallyGame 3D (Three.js, Ray Physics, & Firebase)
+   3D Rally racing application inspired by RallyGame featuring 6 unique cars (Rally 4WD, Muscle V8, Rocket, White Beast), 1v1 AI duels, nitro boost, stunt jumps, and Cloud Firestore CRUD high scores leaderboard.
 
 6. To-Do App (Flutter, REST API)
    Designed and implemented a feature-rich to-do list application. Expertise in managing tasks, reminders, and sorting features. Prioritized a user-friendly design for efficient task management.

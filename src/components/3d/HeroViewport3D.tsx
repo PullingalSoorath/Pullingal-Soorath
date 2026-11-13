@@ -151,7 +151,7 @@ export const HeroViewport3D: React.FC<HeroViewport3DProps> = ({ onOpenCVModal })
         { name: 'Messages', color: '#10B981', icon: '✉️' },
         { name: 'Chat App', color: '#00F5FF', icon: '💬' },
         { name: 'Gemini AI', color: '#7C4DFF', icon: '✨' },
-        { name: 'Rally 3D', color: '#EF4444', icon: '🏎️' },
+        { name: 'Rally Game', color: '#EF4444', icon: '🏎️' },
         { name: 'YouTube UI', color: '#EF4444', icon: '▶️' },
       ];
 

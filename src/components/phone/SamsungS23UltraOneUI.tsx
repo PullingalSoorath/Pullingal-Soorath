@@ -34,7 +34,7 @@ import { ProfileApp } from './apps/ProfileApp';
 import { SkillsApp } from './apps/SkillsApp';
 import { MessagesApp } from './apps/MessagesApp';
 import { RealtimeChatApp } from './apps/RealtimeChatApp';
-import { Rally3DApp } from './apps/Rally3DApp';
+import { RallyGameApp } from './apps/RallyGameApp';
 import { InteractiveWallpaper } from './InteractiveWallpaper';
 
 // Desktop apps catalog for fluid layout morphing (Filtered to core apps + 1-on-1 Realtime Chat)
@@ -44,7 +44,7 @@ const HOME_APPS = [
   { id: 'skills', name: 'Skills', icon: Award, bgGradient: 'from-violet-500 to-indigo-600', badge: 'Flutter' },
   { id: 'messages', name: 'Mail', iconImage: './app-icons/mail.png', icon: Mail, bgGradient: 'from-emerald-500 to-teal-600', badge: 'Email' },
   { id: 'chat', name: 'Chat', iconImage: './app-icons/chat.png', icon: MessageSquare, bgGradient: 'from-cyan-600 to-blue-700', badge: '1-on-1' },
-  { id: 'snake', name: 'Rally 3D', iconImage: './app-icons/rally3d.png', icon: Trophy, bgGradient: 'from-red-600 to-amber-600', badge: '3D' },
+  { id: 'rally', name: 'Rally Game', iconImage: './app-icons/rally3d.png', icon: Trophy, bgGradient: 'from-amber-600 to-red-600', badge: '3D' },
   { id: 'settings', name: 'Settings', iconImage: './app-icons/settings.png', icon: Settings, bgGradient: 'from-slate-600 to-slate-800' },
 ];
 
@@ -1224,9 +1224,9 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
                       </div>
                     </div>
                   ) : (
-                    /* IN-APP CONTAINER (Edge-to-edge for tablet, chat, & Rally 3D) */
-                    <div className={`flex-1 min-h-0 flex flex-col ${isLandscape || activeApp === 'chat' || activeApp === 'snake' || activeApp === 'rally3d' ? 'p-0' : 'p-2'} overflow-hidden overscroll-contain animate-fluid-scale`}>
-                      {activeApp !== 'chat' && activeApp !== 'snake' && activeApp !== 'rally3d' && (
+                    /* IN-APP CONTAINER (Edge-to-edge for tablet, chat, & Rally Game) */
+                    <div className={`flex-1 min-h-0 flex flex-col ${isLandscape || activeApp === 'chat' || activeApp === 'rally' || activeApp === 'rally3d' || activeApp === 'snake' ? 'p-0' : 'p-2'} overflow-hidden overscroll-contain animate-fluid-scale`}>
+                      {activeApp !== 'chat' && activeApp !== 'rally' && activeApp !== 'rally3d' && activeApp !== 'snake' && (
                         <div className={`flex items-center justify-between pb-1.5 mb-1.5 border-b border-white/10 shrink-0 ${isLandscape ? 'px-3 pt-2 bg-[#060a14]/90' : ''}`}>
                           <button
                             type="button"
@@ -1238,7 +1238,7 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
                             <span>Home Screen</span>
                           </button>
                           <span className="text-[10px] font-mono text-slate-400 uppercase tracking-tight">
-                            {isLandscape ? 'Fold 6 Inner \u2022 Widescreen Tablet' : 'Smart Phone View'}
+                            {isLandscape ? 'Fold 6 Inner • Widescreen Tablet' : 'Smart Phone View'}
                           </span>
                         </div>
                       )}
@@ -1276,8 +1276,8 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
                             onGoHome={goHome}
                           />
                         )}
-                        {(activeApp === 'snake' || activeApp === 'rally3d') && (
-                          <Rally3DApp isTablet={isLandscape} onGoHome={goHome} />
+                        {(activeApp === 'rally' || activeApp === 'rally3d' || activeApp === 'snake') && (
+                          <RallyGameApp isTablet={isLandscape} onGoHome={goHome} />
                         )}
                       </div>
                     </div>
