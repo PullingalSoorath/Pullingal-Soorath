@@ -67,7 +67,6 @@ export const GalleryApp: React.FC<GalleryAppProps> = ({ onLaunchApp }) => {
         'Custom Flutter widget syntax highlighters',
         'Optimized reactive BLoC state stream',
       ],
-      launchTarget: 'ai',
       icon: Sparkles,
     },
     {

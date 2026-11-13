@@ -23,7 +23,6 @@ import {
   Smartphone,
   Tablet,
   Trophy,
-  Sparkles,
 } from 'lucide-react';
 import { sound } from '../audio/audioEngine';
 import { PhoneApp } from './apps/PhoneApp';
@@ -36,12 +35,10 @@ import { SkillsApp } from './apps/SkillsApp';
 import { MessagesApp } from './apps/MessagesApp';
 import { RealtimeChatApp } from './apps/RealtimeChatApp';
 import { RallyGameApp } from './apps/RallyGameApp';
-import { AIChatBotApp } from './apps/AIChatBotApp';
 import { InteractiveWallpaper } from './InteractiveWallpaper';
 
 // Desktop apps catalog for fluid layout morphing (Filtered to core apps + 1-on-1 Realtime Chat)
 const HOME_APPS = [
-  { id: 'aichat', name: 'Soorath AI', icon: Sparkles, bgGradient: 'from-violet-600 via-indigo-600 to-cyan-500', badge: 'AI Bot' },
   { id: 'profile', name: 'Profile', iconImage: './app-icons/profile.png', icon: User, bgGradient: 'from-cyan-500 to-blue-600', badge: 'PS' },
   { id: 'gallery', name: 'Gallery', iconImage: './app-icons/gallery.png', icon: ImageIcon, bgGradient: 'from-rose-500 to-pink-600', badge: 'Projects' },
   { id: 'skills', name: 'Skills', icon: Award, bgGradient: 'from-violet-500 to-indigo-600', badge: 'Flutter' },
@@ -64,8 +61,7 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
 }) => {
   // Screen state machine: 'off' | 'aod' | 'lock' | 'home'
   const [screenState, setScreenState] = useState<'off' | 'aod' | 'lock' | 'home'>('home');
-  // Default to AI Chatbot interface when getting into the phone
-  const [activeApp, setActiveApp] = useState<string | null>(initialApp ?? 'aichat');
+  const [activeApp, setActiveApp] = useState<string | null>(initialApp ?? null);
   const [currentTime, setCurrentTime] = useState('12:45');
   const [currentDate, setCurrentDate] = useState('Mon, Oct 26');
 
@@ -1182,15 +1178,6 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
                       >
                         <button
                           type="button"
-                          onClick={(e) => openApp('aichat', e)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 sm:py-2 rounded-2xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 hover:scale-105 active:scale-95 transition-all duration-200 border border-cyan-400/40 cursor-pointer shadow-[0_0_12px_rgba(6,182,212,0.3)]"
-                          title="Soorath AI Chat Bot"
-                        >
-                          <Sparkles className="w-4 h-4 text-cyan-400" />
-                          {isLandscape && <span className="text-xs font-sans font-medium text-white">AI Bot</span>}
-                        </button>
-                        <button
-                          type="button"
                           onClick={(e) => openApp('profile', e)}
                           className="flex items-center gap-1.5 px-3 py-1.5 sm:py-2 rounded-2xl bg-white/5 hover:bg-cyan-500/20 text-white hover:scale-105 active:scale-95 transition-all duration-200 border border-white/10 hover:border-cyan-500/30 cursor-pointer"
                           title="Profile (Pullingal Soorath)"
@@ -1237,9 +1224,9 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
                       </div>
                     </div>
                   ) : (
-                    /* IN-APP CONTAINER (Edge-to-edge for tablet, chat, AI Bot, & Rally Game) */
-                    <div className={`flex-1 min-h-0 flex flex-col ${isLandscape || activeApp === 'chat' || activeApp === 'aichat' || activeApp === 'rally' || activeApp === 'rally3d' || activeApp === 'snake' ? 'p-0' : 'p-2'} overflow-hidden overscroll-contain animate-fluid-scale`}>
-                      {activeApp !== 'chat' && activeApp !== 'aichat' && activeApp !== 'rally' && activeApp !== 'rally3d' && activeApp !== 'snake' && (
+                    /* IN-APP CONTAINER (Edge-to-edge for tablet, chat, & Rally Game) */
+                    <div className={`flex-1 min-h-0 flex flex-col ${isLandscape || activeApp === 'chat' || activeApp === 'rally' || activeApp === 'rally3d' || activeApp === 'snake' ? 'p-0' : 'p-2'} overflow-hidden overscroll-contain animate-fluid-scale`}>
+                      {activeApp !== 'chat' && activeApp !== 'rally' && activeApp !== 'rally3d' && activeApp !== 'snake' && (
                         <div className={`flex items-center justify-between pb-1.5 mb-1.5 border-b border-white/10 shrink-0 ${isLandscape ? 'px-3 pt-2 bg-[#060a14]/90' : ''}`}>
                           <button
                             type="button"
@@ -1257,14 +1244,6 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
                       )}
 
                       <div className="flex-1 min-h-0 overflow-hidden overscroll-contain relative">
-                        {activeApp === 'aichat' && (
-                          <AIChatBotApp
-                            onOpenCVModal={onOpenCVModal}
-                            onLaunchApp={(appId) => openApp(appId)}
-                            onGoHome={goHome}
-                            isTablet={isLandscape}
-                          />
-                        )}
                         {activeApp === 'profile' && (
                           <ProfileApp
                             onOpenCVModal={onOpenCVModal}
