@@ -20,6 +20,22 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
+    // Official Resume & Portfolio Metadata
+    match /resumes/{resumeId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    match /resume_downloads/{downloadId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /portfolio_metadata/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
     // Rally 3D Global High Scores & Leaderboard
     match /rally3d_highscores/{scoreId} {
       allow read: if true;

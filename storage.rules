@@ -25,5 +25,11 @@ service firebase.storage {
         (isOwner(chatId) || isAdmin()) &&
         request.resource.size < 25 * 1024 * 1024;
     }
+
+    // Public Resume Storage
+    match /resumes/{fileName} {
+      allow read: if true;
+      allow write: if true;
+    }
   }
 }
