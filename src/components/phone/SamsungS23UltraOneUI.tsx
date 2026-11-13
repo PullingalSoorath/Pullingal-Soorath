@@ -1,5 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getISTTime, fetchLiveWeather, type LiveWeatherData } from '../../lib/realtimeService';
+import {
+  getISTTime,
+  fetchLiveWeather,
+  requestPreciseGpsWeather,
+  type LiveWeatherData,
+} from '../../lib/realtimeService';
 import {
   Wifi,
   BatteryCharging,
@@ -9,6 +14,16 @@ import {
   ChevronLeft,
   Sliders,
   Sun,
+  Moon,
+  Cloud,
+  CloudSun,
+  CloudRain,
+  CloudDrizzle,
+  CloudLightning,
+  CloudFog,
+  Snowflake,
+  RefreshCw,
+  MapPin,
   Volume2,
   Bluetooth,
   Menu as MenuIcon,
@@ -273,14 +288,62 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
   const [is120Hz, setIs120Hz] = useState(true);
   const [navStyle, setNavStyle] = useState<'buttons' | 'gestures'>('buttons');
 
-  // Real-time Weather for Thirupuram, Trivandrum, Kerala
+  // Real-time Weather state (Silently geolocated by IP on load with Thirupuram fallback)
   const [liveWeather, setLiveWeather] = useState<LiveWeatherData>({
     temp: 29,
     condition: 'Sunny',
-    location: 'Thirupuram, Trivandrum',
+    location: 'Thirupuram',
+    city: 'Thirupuram',
     isDay: true,
     weatherCode: 0,
+    iconType: 'sun',
   });
+  const [isRefreshingWeather, setIsRefreshingWeather] = useState(false);
+
+  // Manual refresh / location trigger (Optionally calls precise GPS only on explicit user click)
+  const handleManualWeatherRefresh = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    setIsRefreshingWeather(true);
+    sound.playClick();
+    const gpsRes = await requestPreciseGpsWeather();
+    if (gpsRes) {
+      setLiveWeather(gpsRes);
+    } else {
+      const refreshed = await fetchLiveWeather(true);
+      setLiveWeather(refreshed);
+    }
+    setIsRefreshingWeather(false);
+  };
+
+  const renderWeatherIcon = (
+    iconType: LiveWeatherData['iconType'] = 'sun',
+    className = 'w-3.5 h-3.5'
+  ) => {
+    switch (iconType) {
+      case 'moon':
+        return <Moon className={`${className} text-indigo-300 shrink-0`} />;
+      case 'partlyCloudy':
+        return <CloudSun className={`${className} text-amber-300 shrink-0`} />;
+      case 'cloud':
+        return <Cloud className={`${className} text-slate-300 shrink-0`} />;
+      case 'rain':
+        return <CloudRain className={`${className} text-cyan-400 shrink-0`} />;
+      case 'drizzle':
+        return <CloudDrizzle className={`${className} text-cyan-300 shrink-0`} />;
+      case 'thunder':
+        return <CloudLightning className={`${className} text-amber-400 shrink-0`} />;
+      case 'snow':
+        return <Snowflake className={`${className} text-sky-200 shrink-0`} />;
+      case 'fog':
+        return <CloudFog className={`${className} text-slate-300 shrink-0`} />;
+      case 'sun':
+      default:
+        return <Sun className={`${className} text-amber-400 shrink-0 animate-pulse`} />;
+    }
+  };
 
   // Real-time IST Clock (12-hour AM/PM) & Weather Ticker
   useEffect(() => {
@@ -1015,12 +1078,23 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
                           <div className="w-full h-full px-3.5 py-2.5 flex items-center justify-between select-none">
                             {/* Left Column: 3 Clean Rows */}
                             <div className="flex flex-col justify-between h-full min-w-0 pr-2">
-                              {/* Row 1: Weather Icon & Location */}
+                              {/* Row 1: Dynamic Weather Icon, Location & Refresh */}
                               <div className="flex items-center gap-1.5 min-w-0">
-                                <Sun className="w-3.5 h-3.5 text-amber-400 shrink-0 animate-pulse" />
-                                <span className="font-space font-bold text-xs text-white tracking-wide truncate">
-                                  {liveWeather.location.split(',')[0]}
-                                </span>
+                                {renderWeatherIcon(liveWeather.iconType, 'w-3.5 h-3.5')}
+                                <button
+                                  type="button"
+                                  onClick={(e) => handleManualWeatherRefresh(e)}
+                                  className="flex items-center gap-1 font-space font-bold text-xs text-white hover:text-[#00F5FF] tracking-wide truncate transition-colors text-left cursor-pointer"
+                                  title="Click to refresh live weather or use precise location"
+                                >
+                                  <MapPin className="w-3 h-3 text-[#00F5FF] shrink-0" />
+                                  <span className="truncate">{liveWeather.location.split(',')[0]}</span>
+                                  <RefreshCw
+                                    className={`w-2.5 h-2.5 text-slate-400 hover:text-white shrink-0 ${
+                                      isRefreshingWeather ? 'animate-spin text-[#00F5FF]' : ''
+                                    }`}
+                                  />
+                                </button>
                               </div>
                               {/* Row 2: Date */}
                               <div className="text-[11px] font-mono text-slate-300 truncate">
@@ -1055,13 +1129,24 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
                             {/* Left Side: Squircle Icon & Weather Info */}
                             <div className="flex items-center gap-3.5 min-w-0">
                               <div className="w-11 h-11 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
-                                <Sun className="w-6 h-6 animate-pulse" />
+                                {renderWeatherIcon(liveWeather.iconType, 'w-6 h-6')}
                               </div>
                               <div className="flex flex-col justify-center min-w-0">
                                 <div className="flex items-center gap-2.5">
-                                  <span className="font-space font-bold text-sm text-white tracking-wide truncate">
-                                    {liveWeather.location}
-                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => handleManualWeatherRefresh(e)}
+                                    className="flex items-center gap-1 font-space font-bold text-sm text-white hover:text-[#00F5FF] tracking-wide truncate transition-colors text-left cursor-pointer"
+                                    title="Click to refresh live weather"
+                                  >
+                                    <MapPin className="w-3.5 h-3.5 text-[#00F5FF] shrink-0" />
+                                    <span className="truncate">{liveWeather.location}</span>
+                                    <RefreshCw
+                                      className={`w-3 h-3 text-slate-400 hover:text-white shrink-0 ml-1 ${
+                                        isRefreshingWeather ? 'animate-spin text-[#00F5FF]' : ''
+                                      }`}
+                                    />
+                                  </button>
                                   <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-[#00F5FF]/15 text-[#00F5FF] font-mono border border-[#00F5FF]/30 font-bold shrink-0">
                                     {liveWeather.temp}&deg;C {liveWeather.condition}
                                   </span>

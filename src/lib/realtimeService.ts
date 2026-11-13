@@ -1,12 +1,16 @@
-// Real-time IST Time & Live Weather Service for Thirupuram, Trivandrum, Kerala
+// Real-time IST Time & Silent IP-Based Live Weather Service
+// No navigator.geolocation on page load (Never prompts browser GPS permissions!)
 
 export interface LiveWeatherData {
   temp: number;
   condition: string;
   location: string;
+  city?: string;
+  country?: string;
   isDay: boolean;
   weatherCode: number;
   humidity?: number;
+  iconType: 'sun' | 'moon' | 'cloud' | 'partlyCloudy' | 'rain' | 'drizzle' | 'thunder' | 'snow' | 'fog';
 }
 
 export interface ISTTimeData {
@@ -16,6 +20,63 @@ export interface ISTTimeData {
   dateFull: string;   // e.g. "Monday, 2 November 2026"
   hours: number;
   minutes: number;
+}
+
+const SESSION_CACHE_KEY = 'ps_visitor_weather_cache_v2';
+const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes session cache
+
+interface IpGeoResult {
+  city: string;
+  latitude: number;
+  longitude: number;
+  country?: string;
+}
+
+const DEFAULT_FALLBACK_LOCATION: IpGeoResult = {
+  city: 'Thirupuram',
+  latitude: 8.3512,
+  longitude: 77.0815,
+  country: 'India',
+};
+
+/**
+ * Maps WMO weather interpretation codes to clean human labels & icon tokens
+ */
+export function mapWmoWeather(
+  code: number,
+  isDay: boolean = true
+): { condition: string; iconType: LiveWeatherData['iconType'] } {
+  if (code === 0) {
+    return { condition: isDay ? 'Sunny' : 'Clear', iconType: isDay ? 'sun' : 'moon' };
+  }
+  if (code === 1 || code === 2) {
+    return { condition: 'Partly Cloudy', iconType: 'partlyCloudy' };
+  }
+  if (code === 3) {
+    return { condition: 'Overcast', iconType: 'cloud' };
+  }
+  if (code === 45 || code === 48) {
+    return { condition: 'Misty Fog', iconType: 'fog' };
+  }
+  if (code >= 51 && code <= 57) {
+    return { condition: 'Drizzle', iconType: 'drizzle' };
+  }
+  if (code >= 61 && code <= 67) {
+    return { condition: code >= 65 ? 'Heavy Rain' : 'Rain', iconType: 'rain' };
+  }
+  if (code >= 71 && code <= 77) {
+    return { condition: 'Snow', iconType: 'snow' };
+  }
+  if (code >= 80 && code <= 82) {
+    return { condition: 'Showers', iconType: 'rain' };
+  }
+  if (code >= 85 && code <= 86) {
+    return { condition: 'Snow Showers', iconType: 'snow' };
+  }
+  if (code >= 95) {
+    return { condition: 'Thunderstorm', iconType: 'thunder' };
+  }
+  return { condition: isDay ? 'Clear' : 'Overcast', iconType: isDay ? 'sun' : 'cloud' };
 }
 
 /**
@@ -61,7 +122,6 @@ export function getISTTime(date = new Date()): ISTTimeData {
       minutes: date.getMinutes(),
     };
   } catch {
-    // Fallback if Intl timeZone is unsupported
     const offset = 5.5 * 60 * 60 * 1000;
     const ist = new Date(date.getTime() + offset);
     const hours = ist.getUTCHours();
@@ -80,60 +140,205 @@ export function getISTTime(date = new Date()): ISTTimeData {
   }
 }
 
-let cachedWeather: LiveWeatherData | null = null;
-let lastWeatherFetchTime = 0;
+function getSessionCachedWeather(): LiveWeatherData | null {
+  try {
+    const raw = sessionStorage.getItem(SESSION_CACHE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.timestamp && Date.now() - parsed.timestamp < CACHE_TTL_MS && parsed.data) {
+        return parsed.data as LiveWeatherData;
+      }
+    }
+  } catch {
+    // sessionStorage not available
+  }
+  return null;
+}
+
+function setSessionCachedWeather(data: LiveWeatherData) {
+  try {
+    sessionStorage.setItem(
+      SESSION_CACHE_KEY,
+      JSON.stringify({ data, timestamp: Date.now() })
+    );
+  } catch {
+    // ignore
+  }
+}
 
 /**
- * Fetches real-time weather for Thirupuram, Trivandrum, Kerala (Lat: 8.36, Long: 77.06)
- * using the Open-Meteo free public API with 10-minute caching.
+ * Silently resolves the visitor's approximate city & coordinates using free HTTPS IP endpoints.
+ * Never uses navigator.geolocation on load, preventing browser permission popups.
  */
-export async function fetchLiveWeather(): Promise<LiveWeatherData> {
-  const now = Date.now();
-  if (cachedWeather && now - lastWeatherFetchTime < 10 * 60 * 1000) {
-    return cachedWeather;
+async function fetchSilentIpLocation(): Promise<IpGeoResult> {
+  // 1. Primary: ipwho.is (Free, fast, HTTPS, CORS-friendly)
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch('https://ipwho.is/', { signal: controller.signal });
+    clearTimeout(timeout);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && typeof data.latitude === 'number' && typeof data.longitude === 'number') {
+        const city = data.city || data.region || DEFAULT_FALLBACK_LOCATION.city;
+        return {
+          city,
+          latitude: data.latitude,
+          longitude: data.longitude,
+          country: data.country,
+        };
+      }
+    }
+  } catch {
+    // Failover
+  }
+
+  // 2. Secondary fallback: freeipapi.com
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch('https://freeipapi.com/api/json', { signal: controller.signal });
+    clearTimeout(timeout);
+    if (res.ok) {
+      const data = await res.json();
+      if (typeof data.latitude === 'number' && typeof data.longitude === 'number') {
+        const city = data.cityName || data.regionName || DEFAULT_FALLBACK_LOCATION.city;
+        return {
+          city,
+          latitude: data.latitude,
+          longitude: data.longitude,
+          country: data.countryName,
+        };
+      }
+    }
+  } catch {
+    // Failover
+  }
+
+  // 3. Tertiary fallback: ipapi.co
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch('https://ipapi.co/json/', { signal: controller.signal });
+    clearTimeout(timeout);
+    if (res.ok) {
+      const data = await res.json();
+      if (!data.error && typeof data.latitude === 'number' && typeof data.longitude === 'number') {
+        const city = data.city || data.region || DEFAULT_FALLBACK_LOCATION.city;
+        return {
+          city,
+          latitude: data.latitude,
+          longitude: data.longitude,
+          country: data.country_name,
+        };
+      }
+    }
+  } catch {
+    // Failover
+  }
+
+  // 4. Default fallback: Thirupuram
+  return DEFAULT_FALLBACK_LOCATION;
+}
+
+/**
+ * Fetches live weather for the visitor's current city silently via IP-to-weather pipeline.
+ * Caches in sessionStorage for 30 minutes to prevent rate-limiting.
+ */
+export async function fetchLiveWeather(forceRefresh: boolean = false): Promise<LiveWeatherData> {
+  if (!forceRefresh) {
+    const cached = getSessionCachedWeather();
+    if (cached) return cached;
   }
 
   try {
-    const res = await fetch(
-      'https://api.open-meteo.com/v1/forecast?latitude=8.36&longitude=77.06&current=temperature_2m,relative_humidity_2m,weather_code,is_day'
-    );
-    if (!res.ok) throw new Error('Failed to fetch weather from Open-Meteo');
-    const data = await res.json();
-    const current = data.current;
+    const geo = await fetchSilentIpLocation();
+
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${geo.latitude}&longitude=${geo.longitude}&current=temperature_2m,relative_humidity_2m,weather_code,is_day`;
+    const res = await fetch(weatherUrl);
+    if (!res.ok) throw new Error(`Open-Meteo HTTP error: ${res.status}`);
+
+    const json = await res.json();
+    const current = json.current;
     const temp = Math.round(current.temperature_2m);
-    const code = current.weather_code;
     const isDay = current.is_day === 1;
-    const humidity = current.relative_humidity_2m;
+    const code = current.weather_code;
+    const { condition, iconType } = mapWmoWeather(code, isDay);
 
-    let condition = 'Sunny';
-    if (code === 0) condition = isDay ? 'Sunny' : 'Clear';
-    else if (code === 1 || code === 2) condition = 'Partly Cloudy';
-    else if (code === 3) condition = 'Overcast';
-    else if (code >= 45 && code <= 48) condition = 'Misty Fog';
-    else if (code >= 51 && code <= 55) condition = 'Drizzle';
-    else if (code >= 61 && code <= 65) condition = 'Rain';
-    else if (code >= 80 && code <= 82) condition = 'Showers';
-    else if (code >= 95) condition = 'Thunderstorm';
-
-    cachedWeather = {
+    const weatherData: LiveWeatherData = {
       temp,
       condition,
-      location: 'Thirupuram, Trivandrum',
+      location: geo.city,
+      city: geo.city,
+      country: geo.country,
       isDay,
       weatherCode: code,
-      humidity,
+      humidity: current.relative_humidity_2m,
+      iconType,
     };
-    lastWeatherFetchTime = now;
-    return cachedWeather;
+
+    setSessionCachedWeather(weatherData);
+    return weatherData;
   } catch (err) {
-    console.warn('Using fallback weather:', err);
+    console.warn('Weather fetch error, using graceful fallback:', err);
     return {
       temp: 29,
       condition: 'Sunny',
-      location: 'Thirupuram, Trivandrum',
+      location: 'Thirupuram',
+      city: 'Thirupuram',
+      country: 'India',
       isDay: true,
       weatherCode: 0,
-      humidity: 70,
+      humidity: 72,
+      iconType: 'sun',
     };
   }
+}
+
+/**
+ * Optional: Manual GPS Weather Request triggered ONLY by an explicit user button click.
+ * Never called automatically on load.
+ */
+export async function requestPreciseGpsWeather(): Promise<LiveWeatherData | null> {
+  if (typeof window === 'undefined' || !navigator.geolocation) return null;
+
+  return new Promise((resolve) => {
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,is_day`;
+          const res = await fetch(weatherUrl);
+          if (res.ok) {
+            const json = await res.json();
+            const current = json.current;
+            const temp = Math.round(current.temperature_2m);
+            const isDay = current.is_day === 1;
+            const code = current.weather_code;
+            const { condition, iconType } = mapWmoWeather(code, isDay);
+
+            const weatherData: LiveWeatherData = {
+              temp,
+              condition,
+              location: 'My Location',
+              city: 'My Location',
+              isDay,
+              weatherCode: code,
+              humidity: current.relative_humidity_2m,
+              iconType,
+            };
+            setSessionCachedWeather(weatherData);
+            resolve(weatherData);
+            return;
+          }
+        } catch {
+          // fallback
+        }
+        resolve(null);
+      },
+      () => resolve(null),
+      { timeout: 6000 }
+    );
+  });
 }
