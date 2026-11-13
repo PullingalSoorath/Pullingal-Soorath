@@ -233,57 +233,57 @@ export const SettingsApp: React.FC<SettingsAppProps> = ({
         <div className="flex-1 overflow-y-auto overscroll-contain p-3 space-y-3 font-mono text-xs">
           <div className="p-3.5 rounded-2xl bg-slate-900 border border-white/10 space-y-2">
             <div className="text-[10px] text-slate-500 uppercase">Hardware & Casing Specs</div>
-            <div className="flex justify-between text-slate-200">
-              <span>Device Name</span>
-              <strong className="text-white">Smart Phone [PS Pro]</strong>
+            <div className="flex items-center justify-between gap-4 text-slate-200">
+              <span className="shrink-0 text-slate-400">Device Name</span>
+              <strong className="text-white text-right">Smart Phone [PS Pro]</strong>
             </div>
-            <div className="flex justify-between text-slate-200">
-              <span>Model Number</span>
-              <span className="text-[#00F5FF]">PS-SMART-ULTRA</span>
+            <div className="flex items-center justify-between gap-4 text-slate-200">
+              <span className="shrink-0 text-slate-400">Model Number</span>
+              <span className="text-[#00F5FF] text-right">PS-SMART-ULTRA</span>
             </div>
-            <div className="flex justify-between text-slate-200">
-              <span>Display Aspect</span>
-              <span>19.3:9 Dynamic AMOLED 2X</span>
+            <div className="flex items-center justify-between gap-4 text-slate-200">
+              <span className="shrink-0 text-slate-400">Display Aspect</span>
+              <span className="text-right">19.3:9 Dynamic AMOLED 2X</span>
             </div>
-            <div className="flex justify-between text-slate-200">
-              <span>Chassis Material</span>
-              <span>Armor Aluminum & Titanium</span>
+            <div className="flex items-center justify-between gap-4 text-slate-200">
+              <span className="shrink-0 text-slate-400">Chassis Material</span>
+              <span className="text-right">Armor Aluminum & Titanium</span>
             </div>
-            <div className="flex justify-between text-slate-200">
-              <span>Stylus</span>
-              <span className="text-emerald-400">Integrated Virtual S-Pen</span>
+            <div className="flex items-center justify-between gap-4 text-slate-200">
+              <span className="shrink-0 text-slate-400">Stylus</span>
+              <span className="text-emerald-400 text-right">Integrated Virtual S-Pen</span>
             </div>
           </div>
 
           <div className="p-3.5 rounded-2xl bg-slate-900 border border-white/10 space-y-2">
             <div className="text-[10px] text-slate-500 uppercase">Software Information</div>
-            <div className="flex justify-between text-slate-200">
-              <span>Mobile OS Version</span>
-              <strong className="text-[#00F5FF]">PS Mobile v8.5</strong>
+            <div className="flex items-center justify-between gap-4 text-slate-200">
+              <span className="shrink-0 text-slate-400">Mobile OS Version</span>
+              <strong className="text-[#00F5FF] text-right">PS Mobile v8.5</strong>
             </div>
-            <div className="flex justify-between text-slate-200">
-              <span>Android Version</span>
-              <span>16 (Baklava)</span>
+            <div className="flex items-center justify-between gap-4 text-slate-200">
+              <span className="shrink-0 text-slate-400">Android Version</span>
+              <span className="text-right">16 (Baklava)</span>
             </div>
-            <div className="flex justify-between text-slate-200">
-              <span>Security Patch</span>
-              <span className="text-emerald-400">Hardware Security Vault</span>
+            <div className="flex items-center justify-between gap-4 text-slate-200">
+              <span className="shrink-0 text-slate-400">Security Patch</span>
+              <span className="text-emerald-400 text-right">Hardware Security Vault</span>
             </div>
           </div>
 
           <div className="p-3.5 rounded-2xl bg-slate-900 border border-white/10 space-y-2">
             <div className="text-[10px] text-slate-500 uppercase">Architect</div>
-            <div className="flex justify-between text-slate-200">
-              <span>Engineer</span>
-              <strong className="text-white">Pullingal Soorath</strong>
+            <div className="flex items-start justify-between gap-4 text-slate-200">
+              <span className="shrink-0 text-slate-400">Engineer</span>
+              <strong className="text-white text-right">Pullingal Soorath</strong>
             </div>
-            <div className="flex justify-between text-slate-200">
-              <span>Location</span>
-              <span>Thirupuram, Trivandrum, Kerala, India</span>
+            <div className="flex items-start justify-between gap-4 text-slate-200">
+              <span className="shrink-0 text-slate-400">Location</span>
+              <span className="text-right">Thirupuram, Trivandrum, Kerala, India</span>
             </div>
-            <div className="flex justify-between text-slate-200">
-              <span>Specialization</span>
-              <span className="text-[#7C4DFF]">Professional Flutter Developer</span>
+            <div className="flex items-start justify-between gap-4 text-slate-200">
+              <span className="shrink-0 text-slate-400">Specialization</span>
+              <span className="text-[#7C4DFF] text-right font-medium">Professional Flutter Developer</span>
             </div>
           </div>
         </div>

@@ -178,8 +178,8 @@ export const GalleryApp: React.FC<GalleryAppProps> = ({ onLaunchApp }) => {
             Flutter Apps &bull; UI Clones &bull; Interactive Systems
           </p>
         </div>
-        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#00F5FF]/10 text-[#00F5FF] border border-[#00F5FF]/30">
-          {filteredProjects.length} Projects
+        <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-[#00F5FF]/10 text-[#00F5FF] border border-[#00F5FF]/30 whitespace-nowrap">
+          Projects
         </span>
       </div>
 

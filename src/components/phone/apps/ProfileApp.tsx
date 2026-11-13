@@ -133,20 +133,20 @@ export const ProfileApp: React.FC<ProfileAppProps> = ({ onOpenCVModal, onOpenMes
           </button>
         </div>
 
-        <div className="flex items-center justify-between text-slate-300">
-          <span className="flex items-center gap-1.5 text-slate-400">
+        <div className="flex items-start justify-between gap-3 text-slate-300">
+          <span className="flex items-center gap-1.5 text-slate-400 shrink-0">
             <MapPin className="w-3.5 h-3.5 text-[#3D5AFE]" />
             <span>Location:</span>
           </span>
-          <span className="text-white">Thirupuram, Trivandrum, Kerala, India</span>
+          <span className="text-white text-right">Thirupuram, Trivandrum, Kerala, India</span>
         </div>
 
-        <div className="flex items-center justify-between text-slate-300">
-          <span className="flex items-center gap-1.5 text-slate-400">
+        <div className="flex items-center justify-between gap-3 text-slate-300">
+          <span className="flex items-center gap-1.5 text-slate-400 shrink-0">
             <Globe className="w-3.5 h-3.5 text-emerald-400" />
             <span>Status:</span>
           </span>
-          <span className="text-emerald-400 font-bold">Open for Roles</span>
+          <span className="text-emerald-400 font-bold text-right">Open for Roles</span>
         </div>
       </div>
 

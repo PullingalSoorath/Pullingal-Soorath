@@ -93,12 +93,12 @@ export const AboutSection: React.FC = () => {
 
               <div className="pt-4 border-t border-white/10 flex flex-col gap-3 font-mono text-xs">
                 {/* Location */}
-                <div className="flex items-center justify-between text-slate-300">
-                  <span className="flex items-center gap-2 text-slate-400">
+                <div className="flex items-start sm:items-center justify-between gap-3 text-slate-300">
+                  <span className="flex items-center gap-2 text-slate-400 shrink-0">
                     <MapPin className="w-4 h-4 text-[#00F5FF]" />
                     <span>Location:</span>
                   </span>
-                  <span className="text-white font-medium">Thirupuram, Trivandrum, Kerala, India</span>
+                  <span className="text-white font-medium text-right">Thirupuram, Trivandrum, Kerala, India</span>
                 </div>
 
                 {/* Email with copy */}
