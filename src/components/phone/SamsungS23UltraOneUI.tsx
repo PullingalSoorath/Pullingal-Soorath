@@ -349,60 +349,15 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
     setScreenState('home');
   };
 
-  // Prevent outer window scroll on any interaction or focus inside phone chassis
-  useEffect(() => {
-    const chassis = phoneChassisRef.current;
-    if (!chassis) return;
-
-    let savedScrollY = window.scrollY;
-    let savedScrollX = window.scrollX;
-
-    const handlePointerDown = () => {
-      savedScrollY = window.scrollY;
-      savedScrollX = window.scrollX;
-    };
-
-    const handleClick = (e: MouseEvent) => {
-      e.stopPropagation();
-      if (window.scrollY !== savedScrollY || window.scrollX !== savedScrollX) {
-        window.scrollTo(savedScrollX, savedScrollY);
-      }
-    };
-
-    const handleFocusIn = () => {
-      requestAnimationFrame(() => {
-        if (window.scrollY !== savedScrollY || window.scrollX !== savedScrollX) {
-          window.scrollTo(savedScrollX, savedScrollY);
-        }
-      });
-    };
-
-    chassis.addEventListener('pointerdown', handlePointerDown, { passive: true });
-    chassis.addEventListener('click', handleClick);
-    chassis.addEventListener('focusin', handleFocusIn, { passive: true });
-
-    return () => {
-      chassis.removeEventListener('pointerdown', handlePointerDown);
-      chassis.removeEventListener('click', handleClick);
-      chassis.removeEventListener('focusin', handleFocusIn);
-    };
-  }, []);
-
   const goHome = (e?: React.MouseEvent) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
+    e?.stopPropagation();
     sound.playClick();
     setActiveApp(null);
     setQuickSettingsOpen(false);
   };
 
   const openApp = (appId: string, e?: React.MouseEvent) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
+    e?.stopPropagation();
     sound.playClick();
     setActiveApp(appId);
     setQuickSettingsOpen(false);
@@ -413,7 +368,6 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
 
   return (
     <div
-      onClick={(e) => e.stopPropagation()}
       className={`perspective-2000 w-full transition-all duration-[2000ms] ease-[cubic-bezier(0.32,0.72,0,1)] flex flex-col items-center justify-start sm:justify-center select-none ${
         isCoveringScreen
           ? 'fixed inset-0 z-50 bg-[#020408]/95 backdrop-blur-2xl p-2 sm:p-4 pt-4 sm:pt-6 overflow-y-auto sm:overflow-hidden'
@@ -487,8 +441,6 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
           {/* Physical Device Chassis (Samsung Galaxy Z Fold 6 Kinematics) */}
           <div
             ref={phoneChassisRef}
-            onClick={(e) => e.stopPropagation()}
-            onMouseDown={(e) => e.stopPropagation()}
             style={{
               width: isLandscape ? 'min(980px, 94vw)' : 'min(350px, 92vw)',
               height: isLandscape ? 'min(620px, 82vh)' : '690px',
@@ -1584,9 +1536,7 @@ const AppIcon: React.FC<{
     <button
       type="button"
       onClick={(e) => {
-        e.preventDefault();
         e.stopPropagation();
-        sound.playHover();
         onClick(e);
       }}
       className="flex flex-col items-center gap-1 group active:scale-90 transition-transform duration-200 ease-[cubic-bezier(0.34,1.56,0.64,1)] cursor-pointer"
