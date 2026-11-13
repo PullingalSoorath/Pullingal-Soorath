@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { sound } from '../audio/audioEngine';
 import confetti from 'canvas-confetti';
-import { downloadResumePdf, fetchResumeMetadata, type ResumeMetadata, DEFAULT_RESUME_INFO } from '../../lib/resumeService';
+import { downloadResumePdf, fetchResumeMetadata, getReliableResumeUrl, type ResumeMetadata, DEFAULT_RESUME_INFO } from '../../lib/resumeService';
 
 interface CVDownloadModalProps {
   isOpen: boolean;
@@ -30,8 +30,7 @@ export const CVDownloadModal: React.FC<CVDownloadModalProps> = ({ isOpen, onClos
   const [isDone, setIsDone] = useState(false);
   const [activeTab, setActiveTab] = useState<'pdf' | 'dossier'>('pdf');
   const [metadata, setMetadata] = useState<ResumeMetadata>(DEFAULT_RESUME_INFO);
-
-  const pdfUrl = './Pullingal_Soorath_Resume.pdf';
+  const [pdfUrl, setPdfUrl] = useState<string>('./Pullingal_Soorath_Resume.pdf');
 
   const logs = [
     'Connecting to Cloud Firestore database vault (resumes/latest)...',
@@ -47,6 +46,10 @@ export const CVDownloadModal: React.FC<CVDownloadModalProps> = ({ isOpen, onClos
       setIsDone(false);
       setStep(0);
       setProgress(20);
+
+      getReliableResumeUrl().then((url) => {
+        setPdfUrl(url);
+      });
 
       fetchResumeMetadata().then((data) => {
         if (data) setMetadata(data);
@@ -237,36 +240,42 @@ export const CVDownloadModal: React.FC<CVDownloadModalProps> = ({ isOpen, onClos
                   type="application/pdf"
                   className="w-full h-full rounded-2xl"
                 >
-                  {/* Fallback for devices without native PDF plugin */}
-                  <div className="p-6 text-center flex flex-col items-center justify-center h-full space-y-4">
-                    <div className="w-16 h-16 rounded-2xl bg-[#00F5FF]/10 border border-[#00F5FF]/30 flex items-center justify-center text-[#00F5FF]">
-                      <FileText className="w-8 h-8" />
+                  <iframe
+                    src={`${pdfUrl}#toolbar=1`}
+                    className="w-full h-full rounded-2xl border-0"
+                    title="Pullingal Soorath Resume"
+                  >
+                    {/* Fallback for devices without native PDF plugin */}
+                    <div className="p-6 text-center flex flex-col items-center justify-center h-full space-y-4">
+                      <div className="w-16 h-16 rounded-2xl bg-[#00F5FF]/10 border border-[#00F5FF]/30 flex items-center justify-center text-[#00F5FF]">
+                        <FileText className="w-8 h-8" />
+                      </div>
+                      <div>
+                        <h4 className="text-white font-bold font-space text-base">
+                          Pullingal Soorath Resume.pdf
+                        </h4>
+                        <p className="text-xs text-slate-400 font-mono mt-1 max-w-md">
+                          Your browser can view or download the verified 2-page PDF directly using the buttons below.
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={handleOpenNewTab}
+                          className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-mono text-xs flex items-center gap-1.5 transition-all"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          <span>Open PDF in New Tab</span>
+                        </button>
+                        <button
+                          onClick={handleDownload}
+                          className="px-4 py-2 rounded-xl bg-[#00F5FF] text-black font-bold font-mono text-xs flex items-center gap-1.5 hover:brightness-110 transition-all"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          <span>Download PDF</span>
+                        </button>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="text-white font-bold font-space text-base">
-                        Pullingal Soorath Resume.pdf
-                      </h4>
-                      <p className="text-xs text-slate-400 font-mono mt-1 max-w-md">
-                        Your browser can view or download the verified 2-page PDF directly using the buttons below.
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={handleOpenNewTab}
-                        className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-mono text-xs flex items-center gap-1.5 transition-all"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                        <span>Open PDF in New Tab</span>
-                      </button>
-                      <button
-                        onClick={handleDownload}
-                        className="px-4 py-2 rounded-xl bg-[#00F5FF] text-black font-bold font-mono text-xs flex items-center gap-1.5 hover:brightness-110 transition-all"
-                      >
-                        <Download className="w-3.5 h-3.5" />
-                        <span>Download PDF</span>
-                      </button>
-                    </div>
-                  </div>
+                  </iframe>
                 </object>
               </div>
             ) : (

@@ -26,4 +26,17 @@ fs.copyFileSync('dist/index.html', 'index.html');
 fs.writeFileSync('.nojekyll', '');
 fs.writeFileSync('docs/.nojekyll', '');
 
+// 6. Copy all root-level assets and files (PDFs, images, icons) from dist to root for root-based GitHub Pages
+const distItems = fs.readdirSync('dist', { withFileTypes: true });
+for (const item of distItems) {
+  if (item.name === 'index.html' || item.name === 'assets') continue;
+  const src = `dist/${item.name}`;
+  const dest = item.name;
+  if (item.isDirectory()) {
+    fs.cpSync(src, dest, { recursive: true });
+  } else {
+    fs.copyFileSync(src, dest);
+  }
+}
+
 console.log('Successfully prepared GitHub Pages deployment for both root and /docs!');

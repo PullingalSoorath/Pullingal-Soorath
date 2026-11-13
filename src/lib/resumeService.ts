@@ -95,9 +95,68 @@ export async function recordResumeDownload(source: string = 'web'): Promise<void
 }
 
 /**
- * Initiates the direct browser download of the official 2-page PDF resume.
+ * Resolves the most reliable working URL for the resume PDF,
+ * checking local path with fallback to verified Firebase CDN.
  */
-export function downloadResumePdf(fileName: string = 'Pullingal_Soorath_Resume.pdf') {
+export async function getReliableResumeUrl(fileName: string = 'Pullingal_Soorath_Resume.pdf'): Promise<string> {
+  const localUrl = `./${fileName}`;
+  try {
+    const res = await fetch(localUrl, { method: 'HEAD' });
+    if (res.ok) return localUrl;
+  } catch {
+    // ignore
+  }
+  return `https://pullingal-soorath.web.app/${fileName}`;
+}
+
+/**
+ * Initiates direct browser download with fallback to blob and CDN so it NEVER fails with 404.
+ */
+export async function downloadResumePdf(fileName: string = 'Pullingal_Soorath_Resume.pdf') {
+  recordResumeDownload('direct_download_button');
+
+  try {
+    let blob: Blob | null = null;
+
+    // 1. Try local fetch
+    try {
+      const localRes = await fetch(`./${fileName}`);
+      if (localRes.ok) {
+        blob = await localRes.blob();
+      }
+    } catch {
+      // ignore
+    }
+
+    // 2. If local fails (e.g. GitHub Pages CDN lag), fetch from live Firebase CDN
+    if (!blob) {
+      try {
+        const cdnRes = await fetch(`https://pullingal-soorath.web.app/${fileName}`);
+        if (cdnRes.ok) {
+          blob = await cdnRes.blob();
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    // 3. Trigger download via object URL
+    if (blob) {
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+      return;
+    }
+  } catch {
+    // ignore
+  }
+
+  // 4. Final anchor fallback
   const link = document.createElement('a');
   link.href = `./${fileName}`;
   link.download = fileName;
@@ -106,5 +165,4 @@ export function downloadResumePdf(fileName: string = 'Pullingal_Soorath_Resume.p
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  recordResumeDownload('direct_download_button');
 }
