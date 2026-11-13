@@ -16,6 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController(text: 'pullingalsoorath@gmail.com');
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _isSignUp = false;
   String? _errorMessage;
   bool _obscurePassword = true;
 
@@ -26,7 +27,47 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
+  void _showSetupInstructionDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        backgroundColor: AppTheme.cardBg,
+        title: const Row(
+          children: [
+            Icon(Icons.info_outline, color: AppTheme.cyan),
+            SizedBox(width: 8),
+            Text('Enable Email Auth', style: TextStyle(fontSize: 16)),
+          ],
+        ),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'To sign in with Email & Password in your Firebase project (pullingal-soorath):\n',
+              style: TextStyle(color: Colors.white70, fontSize: 13),
+            ),
+            Text(
+              '1. Go to console.firebase.google.com\n'
+              '2. Select project "pullingal-soorath"\n'
+              '3. Go to Authentication -> Sign-in method\n'
+              '4. Enable "Email/Password" and click Save.\n\n'
+              'Then return to this app and create or enter your password!',
+              style: TextStyle(color: AppTheme.cyan, fontSize: 12.5, height: 1.4),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK, Got It', style: TextStyle(color: AppTheme.cyan)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _handleAuthAction() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
@@ -37,13 +78,25 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
+    if (password.length < 6) {
+      setState(() {
+        _errorMessage = 'Password must be at least 6 characters.';
+      });
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
     try {
-      await widget.service.signInAdmin(email: email, password: password);
+      if (_isSignUp) {
+        await widget.service.signUpAdmin(email: email, password: password);
+      } else {
+        await widget.service.signInAdmin(email: email, password: password);
+      }
+
       if (!mounted) return;
       Navigator.pushReplacement(
         context,
@@ -52,9 +105,28 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       );
     } catch (e) {
-      setState(() {
-        _errorMessage = e.toString().replaceAll('Exception:', '').trim();
-      });
+      final msg = e.toString();
+      if (msg.contains('operation-not-allowed')) {
+        _showSetupInstructionDialog();
+        setState(() {
+          _errorMessage =
+              'Email/Password auth is not enabled yet in your Firebase Console. Tap "How to enable" below.';
+        });
+      } else if (msg.contains('user-not-found') || msg.contains('invalid-credential')) {
+        setState(() {
+          _errorMessage =
+              'No account found with this password. If this is your first time, tap "Set up admin password" below!';
+        });
+      } else if (msg.contains('email-already-in-use')) {
+        setState(() {
+          _errorMessage =
+              'Account already exists! Please switch to "Sign In" and enter your password.';
+        });
+      } else {
+        setState(() {
+          _errorMessage = msg.replaceAll('Exception:', '').trim();
+        });
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -110,7 +182,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
 
                   // Header Titles
                   const Text(
@@ -123,18 +195,20 @@ class _LoginScreenState extends State<LoginScreen> {
                       letterSpacing: 0.5,
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'Pullingal Soorath Portfolio Mobile Gateway',
+                  const SizedBox(height: 4),
+                  Text(
+                    _isSignUp
+                        ? 'Create / Set Your Admin Password'
+                        : 'Pullingal Soorath Portfolio Mobile Gateway',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: AppTheme.cyan,
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      letterSpacing: 1,
+                      letterSpacing: 0.5,
                     ),
                   ),
-                  const SizedBox(height: 36),
+                  const SizedBox(height: 30),
 
                   // Error Banner
                   if (_errorMessage != null) ...[
@@ -163,7 +237,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   // Email Field
                   const Text(
-                    'Admin Email',
+                    'Admin Email (Designated Admin)',
                     style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 6),
@@ -179,9 +253,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 16),
 
                   // Password Field
-                  const Text(
-                    'Password',
-                    style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600),
+                  Text(
+                    _isSignUp ? 'Choose Admin Password (min 6 characters)' : 'Admin Password',
+                    style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 6),
                   TextField(
@@ -190,7 +264,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.lock_outline, color: AppTheme.cyan, size: 20),
-                      hintText: '••••••••',
+                      hintText: _isSignUp ? 'Choose a secure password' : 'Enter your password',
                       suffixIcon: IconButton(
                         icon: Icon(
                           _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
@@ -203,9 +277,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Sign In Button
+                  // Submit Button
                   ElevatedButton(
-                    onPressed: _isLoading ? null : _handleLogin,
+                    onPressed: _isLoading ? null : _handleAuthAction,
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
@@ -215,14 +289,31 @@ class _LoginScreenState extends State<LoginScreen> {
                             width: 20,
                             child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2.5),
                           )
-                        : const Text(
-                            'SIGN IN AS ADMIN',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                        : Text(
+                            _isSignUp ? 'CREATE ADMIN PASSWORD & ENTER' : 'SIGN IN AS ADMIN',
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                           ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
 
-                  // Info Footer
+                  // Toggle Sign In vs Sign Up
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _isSignUp = !_isSignUp;
+                        _errorMessage = null;
+                      });
+                    },
+                    child: Text(
+                      _isSignUp
+                          ? 'Already set up a password? Sign In'
+                          : 'First time? Tap here to set up your admin password',
+                      style: const TextStyle(color: AppTheme.cyan, fontSize: 12.5),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Info Box
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
@@ -230,14 +321,31 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: AppTheme.borderLight),
                     ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.shield_outlined, color: AppTheme.cyan, size: 16),
-                        SizedBox(width: 8),
-                        Text(
-                          'Protected by Firebase Security Rules (adminPS)',
-                          style: TextStyle(color: AppTheme.textMuted, fontSize: 11),
+                        const Row(
+                          children: [
+                            Icon(Icons.shield_outlined, color: AppTheme.cyan, size: 16),
+                            SizedBox(width: 8),
+                            Text(
+                              'Authorized Admin Accounts:',
+                              style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          '• pullingalsoorath@gmail.com\n• pullingalsoorath.dev@gmail.com',
+                          style: TextStyle(color: AppTheme.textMuted, fontSize: 11, height: 1.3),
+                        ),
+                        const SizedBox(height: 6),
+                        GestureDetector(
+                          onTap: _showSetupInstructionDialog,
+                          child: const Text(
+                            'Need help with password setup? Click here',
+                            style: TextStyle(color: AppTheme.purple, fontSize: 11, decoration: TextDecoration.underline),
+                          ),
                         ),
                       ],
                     ),

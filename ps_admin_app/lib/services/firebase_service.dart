@@ -56,6 +56,27 @@ class PortfolioFirebaseService {
     return cred;
   }
 
+  Future<UserCredential> signUpAdmin({
+    required String email,
+    required String password,
+  }) async {
+    final cleanEmail = email.trim();
+    if (!isEmailAdmin(cleanEmail)) {
+      throw FirebaseAuthException(
+        code: 'unauthorized-admin',
+        message: 'This email ($cleanEmail) is not one of your designated Admin emails.',
+      );
+    }
+
+    final cred = await _auth.createUserWithEmailAndPassword(
+      email: cleanEmail,
+      password: password,
+    );
+
+    await _syncAdminProfile(cred.user!);
+    return cred;
+  }
+
   Future<void> signOut() async {
     await _auth.signOut();
   }
