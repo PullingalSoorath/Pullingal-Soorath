@@ -21,9 +21,13 @@ service cloud.firestore {
     }
 
     // Rally 3D Global High Scores & Leaderboard
-    match /rally_highscores/{scoreId} {
-      allow read, create, update: if true;
-      allow delete: if isAdmin() || true;
+    match /rally3d_highscores/{scoreId} {
+      allow read: if true;
+      allow create: if request.resource.data.name is string
+                    && request.resource.data.name.size() >= 2
+                    && request.resource.data.name.size() <= 15
+                    && request.resource.data.score is number;
+      allow update, delete: if request.auth != null; // Admin only
     }
 
     // User Profile Documents

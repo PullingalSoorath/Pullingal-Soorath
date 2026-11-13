@@ -1224,9 +1224,9 @@ export const SmartPhoneView: React.FC<SmartPhoneViewProps> = ({
                       </div>
                     </div>
                   ) : (
-                    /* IN-APP CONTAINER (Edge-to-edge for tablet & chat app) */
-                    <div className={`flex-1 min-h-0 flex flex-col ${isLandscape || activeApp === 'chat' ? 'p-0' : 'p-2'} overflow-hidden overscroll-contain animate-fluid-scale`}>
-                      {activeApp !== 'chat' && (
+                    /* IN-APP CONTAINER (Edge-to-edge for tablet, chat, & Rally 3D) */
+                    <div className={`flex-1 min-h-0 flex flex-col ${isLandscape || activeApp === 'chat' || activeApp === 'snake' || activeApp === 'rally3d' ? 'p-0' : 'p-2'} overflow-hidden overscroll-contain animate-fluid-scale`}>
+                      {activeApp !== 'chat' && activeApp !== 'snake' && activeApp !== 'rally3d' && (
                         <div className={`flex items-center justify-between pb-1.5 mb-1.5 border-b border-white/10 shrink-0 ${isLandscape ? 'px-3 pt-2 bg-[#060a14]/90' : ''}`}>
                           <button
                             type="button"
